@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # 1. Charger le dataset original
 df = pd.read_csv("dataset.csv")
@@ -41,6 +42,7 @@ print("Durées égales à 0 :",
 print("Tempos égaux à 0 :",
       (df["tempo"] == 0).sum())
 
+# Liste contenant uniquement les variables ayant des valeurs entre 0 et 1.
 colonnes_01 = [
     "danceability",
     "energy",
@@ -96,3 +98,20 @@ variables = [
 print(df[variables].isnull().sum())
 
 print("Nombre final de chansons :", len(df))
+
+
+# Créer l'histogramme
+plt.figure(figsize=(8, 5))
+
+plt.hist(df["popularity"], bins=20, edgecolor="black")
+
+# Ajouter les titres et les étiquettes
+plt.title("Distribution de la popularité des chansons")
+plt.xlabel("Popularité (0 à 100)")
+plt.ylabel("Nombre de chansons")
+
+# Enregistrer le graphique
+plt.savefig("distribution_popularite.png")
+
+# Afficher le graphique
+plt.show()
