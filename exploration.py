@@ -1,13 +1,98 @@
 import pandas as pd
 
-df = pd.read_csv("dataset_30000.csv")
+# 1. Charger le dataset original
+df = pd.read_csv("dataset.csv")
 
 print(df.head())
 print("Nombre de lignes :", len(df))
 
-# Examiner les types et les valeurs non nulles
-df.info()
 
-# Examiner les statistiques descriptives
+# 2. Sélectionner aléatoirement 30 000 chansons
+df_30k = df.sample(n=30000, random_state=42)
+
+# Enregistrer le nouveau dataset
+df_30k.to_csv("dataset_30000.csv", index=False)
+
+print("Nombre de chansons sélectionnées :", len(df_30k))
+
+
+# 3. Explorer le nouveau dataset
+df = pd.read_csv("dataset_30000.csv")
+
+print("\n--- Informations générales ---")
+print(df.info())
+
+print("\n--- Statistiques descriptives ---")
 print(df.describe())
+
+print("\n--- Valeurs manquantes ---")
 print(df.isnull().sum())
+
+print("\n--- Doublons ---")
+print("Nombre de doublons :", df.duplicated().sum())
+
+
+# 4. Vérifier les valeurs suspectes
+print("\n--- Vérification des valeurs suspectes ---")
+
+print("Durées égales à 0 :",
+      (df["duration_ms"] == 0).sum())
+
+print("Tempos égaux à 0 :",
+      (df["tempo"] == 0).sum())
+
+colonnes_01 = [
+    "danceability",
+    "energy",
+    "speechiness",
+    "acousticness",
+    "instrumentalness",
+    "liveness",
+    "valence"
+]
+
+for colonne in colonnes_01:
+    print(
+        colonne,
+        "hors intervalle [0, 1] :",
+        ((df[colonne] < 0) | (df[colonne] > 1)).sum()
+    )
+
+
+# 5. Nettoyer les données
+
+# Supprimer la colonne d'index inutile
+df = df.drop(columns=["Unnamed: 0"])
+
+# Supprimer les chansons ayant une durée ou un tempo égal à 0
+df = df[
+    (df["duration_ms"] > 0) &
+    (df["tempo"] > 0)
+]
+
+# Vérifier le résultat
+print("\n--- Après le nettoyage ---")
+print("Nombre de chansons restantes :", len(df))
+
+print("Durées égales à 0 :",
+      (df["duration_ms"] == 0).sum())
+
+print("Tempos égaux à 0 :",
+      (df["tempo"] == 0).sum())
+
+# Enregistrer le dataset nettoyé
+df.to_csv("dataset_30000_clean.csv", index=False)
+
+variables = [
+    "danceability",
+    "energy",
+    "tempo",
+    "loudness",
+    "duration_ms",
+    "track_genre",
+    "popularity"
+]
+
+print(df[variables].isnull().sum())
+
+print("Nombre final de chansons :", len(df))
