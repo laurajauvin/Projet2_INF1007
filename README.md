@@ -37,3 +37,6 @@ Nous avons retiré la colonne Unnamed: 0, puisqu'elle correspond à un index inu
 Nous avons conservé les valeurs manquantes dans artists, album_name et track_name, puisque ces colonnes ne sont pas utilisées comme variables d'entrée du modèle. Elles peuvent toutefois être utiles pour identifier les chansons.
 
 Après le nettoyage, notre jeu de données contient 29 947 chansons.
+
+----Définition du problème----
+Notre variable cible est la popularité d'une chanson (popularity). Comme nous cherchons une valeur numérique, il s'agit d'un problème de régression linéaire. Le modèle choisi est donc la régression linéaire, car c'est un modèle simple pour prédire une valeur numérique. Nous avons choisi le MAE comme métrique d'évaluation, car il mesure l'écart absolu moyen entre les valeurs de popularité prédites par notre modèle et les valeurs réelles. Cette métrique est facile à interpréter puisque la popularité est mesurée sur une échelle de 0 à 100. Par exemple, un MAE de 8 signifie que les prédictions s'écartent en moyenne de 8 points des valeurs réelles.
