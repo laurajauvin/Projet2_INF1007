@@ -137,4 +137,10 @@ x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, rando
 #Calcule la popularité moyenne des données d'entraînement
 moyenne = y_train.mean()
 
+#Crée une prédiction pour chaque chanson de test; elles ont toutes la même valeur: la moyenne calculée juste avant
 y_reference = [moyenne] * len(y_test)
+
+#Calcul de la métrique d'évaluation MAE
+#Compare les prédictions aux vraies popularités dans y_test
+mae_reference = round(mean_absolute_error(y_test, y_reference), 2)
+
