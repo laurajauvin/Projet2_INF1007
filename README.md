@@ -38,6 +38,9 @@ Nous avons conservé les valeurs manquantes dans artists, album_name et track_na
 
 Après le nettoyage, notre jeu de données contient 29 947 chansons.
 
+----Définition du problème----
+Notre variable cible est la popularité d'une chanson (popularity). Comme nous cherchons une valeur numérique, il s'agit d'un problème de régression linéaire. Le modèle choisi est donc la régression linéaire, car c'est un modèle simple pour prédire une valeur numérique. Nous avons choisi le MAE comme métrique d'évaluation, car il mesure l'écart absolu moyen entre les valeurs de popularité prédites par notre modèle et les valeurs réelles. Cette métrique est facile à interpréter puisque la popularité est mesurée sur une échelle de 0 à 100. Par exemple, un MAE de 8 signifie que les prédictions s'écartent en moyenne de 8 points des valeurs réelles.
+
 
 ---- Séparation des données ----
 

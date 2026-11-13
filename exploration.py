@@ -1,6 +1,5 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
 
 # 1. Charger le dataset original
 df = pd.read_csv("dataset.csv")
@@ -116,3 +115,22 @@ plt.savefig("distribution_popularite.png")
 
 # Afficher le graphique
 plt.show()
+
+
+#Volet 2.3: Séparation des données
+
+#Poser les variables
+x = df[["danceability", "energy", "tempo", "loudness",
+        "duration_ms", "track_genre"]]
+y = df["popularity"]
+
+#Séparer les données de test et d'entraînement
+#Environ 80% des lignes vont à l'entraînemnt et 20% au test; random = 42 permet d'obtenir la même séparation à chaque fois qu'on relance le code
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, random_state = 42)
+
+#Volet 2.4: Établir une référence
+
+#Calcule la popularité moyenne des données d'entraînement
+moyenne = y_train.mean()
+
+y_reference = [moyenne] * len(y_test)
