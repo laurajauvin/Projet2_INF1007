@@ -37,3 +37,8 @@ Nous avons retiré la colonne Unnamed: 0, puisqu'elle correspond à un index inu
 Nous avons conservé les valeurs manquantes dans artists, album_name et track_name, puisque ces colonnes ne sont pas utilisées comme variables d'entrée du modèle. Elles peuvent toutefois être utiles pour identifier les chansons.
 
 Après le nettoyage, notre jeu de données contient 29 947 chansons.
+
+
+---- Séparation des données ----
+
+Après avoir nettoyé notre dataset, nous avons séparé les 29 947 chansons en deux ensembles : 80 % pour l'entraînement et 20 % pour les tests. Les données d'entraînement permettent au modèle d'apprendre les relations entre les caractéristiques musicales et la popularité des chansons. Les données de test servent ensuite à évaluer sa capacité à prédire la popularité de chansons qu'il n'a pas utilisées pendant son apprentissage. Nous avons utilisé random_state=42 afin de rendre notre séparation reproductible.
