@@ -3,8 +3,6 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 
-#Volet 2.1: Exploration et nettoyage des données
-
 # 1. Charger le dataset original
 df = pd.read_csv("dataset.csv")
 

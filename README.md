@@ -40,3 +40,8 @@ Après le nettoyage, notre jeu de données contient 29 947 chansons.
 
 ----Définition du problème----
 Notre variable cible est la popularité d'une chanson (popularity). Comme nous cherchons une valeur numérique, il s'agit d'un problème de régression linéaire. Le modèle choisi est donc la régression linéaire, car c'est un modèle simple pour prédire une valeur numérique. Nous avons choisi le MAE comme métrique d'évaluation, car il mesure l'écart absolu moyen entre les valeurs de popularité prédites par notre modèle et les valeurs réelles. Cette métrique est facile à interpréter puisque la popularité est mesurée sur une échelle de 0 à 100. Par exemple, un MAE de 8 signifie que les prédictions s'écartent en moyenne de 8 points des valeurs réelles.
+
+
+---- Séparation des données ----
+
+Après avoir nettoyé notre dataset, nous avons séparé les 29 947 chansons en deux ensembles : 80 % pour l'entraînement et 20 % pour les tests. Les données d'entraînement permettent au modèle d'apprendre les relations entre les caractéristiques musicales et la popularité des chansons. Les données de test servent ensuite à évaluer sa capacité à prédire la popularité de chansons qu'il n'a pas utilisées pendant son apprentissage. Nous avons utilisé random_state=42 afin de rendre notre séparation reproductible.
