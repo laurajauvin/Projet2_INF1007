@@ -1,0 +1,41 @@
+[server]
+enableStaticServing = true
+
+[theme]
+base = "dark"
+#primaryColor = "#C8DDBA"
+#backgroundColor = "#3C2E56"
+#secondaryBackgroundColor = "#1E382C"
+#textColor = "#E1B5FF"
+primaryColor = "#E1B5FF"
+backgroundColor = "#171123"
+secondaryBackgroundColor = "#493965"
+textColor = "#ffffff"
+secondaryTextColor = "#E1B5FF"
+font = "lato"
+
+# Polices
+ 
+[[theme.fontFaces]]
+family = "lato"
+url = "/app/static/Lato-Regular.ttf"
+style = "normal"
+weight = 400
+
+[[theme.fontFaces]]
+family = "lato"
+url = "/app/static/Lato-Bold.ttf"
+style = "normal"
+weight = 700
+
+[[theme.fontFaces]]
+family = "lato"
+url = "/app/static/Lato-Italic.ttf"
+style = "italic"
+weight = 400
+
+[[theme.fontFaces]]
+family = "lato"
+url = "/app/static/Lato-Light.ttf"
+style = "normal"
+weight = 300

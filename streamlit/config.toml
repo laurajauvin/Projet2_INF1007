@@ -1,8 +1,0 @@
-#Thème 
-[theme]
-base = "dark"
-
-primaryColor = "#C8DDBA"
-backgroundColor = "#3C2E56"
-secondaryBackgroundColor = "#1E382C"
-textColor = "#E1B5FF"
