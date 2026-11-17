@@ -9,8 +9,6 @@ st.set_page_config(
     layout="wide"
 )
 
-#Taille du texte
-
 st.markdown("""
     <style>
 
@@ -36,11 +34,6 @@ st.markdown("""
     div[data-testid="stText"] pre {
         font-size: 20px !important;
     }
-
-    div[data-testid="stMarkdownContainer"] p {
-        font-size: 20px !important;
-    }
-
     </style>
     """, unsafe_allow_html=True)
 
@@ -59,14 +52,11 @@ st.markdown(
 
 #Diviser l'interface en deux colonnes
 
-col_caracteristique, col_importance = st.columns([1, 1])
+col_gauche, col_droite = st.columns([1, 1])
 
-# COLONNE DE GAUCHE (Caractéristiques musicales)
-with col_caracteristique:
+# COLONNE DE GAUCHE
+with col_gauche:
     st.subheader("Caractéristiques musicales")
-    st.markdown("<div style='padding-top: 10px;'></div>",
-        unsafe_allow_html=True)
-
     
     sous_col_gauche, sous_col_droite = st.columns([1, 1])
     
@@ -80,7 +70,6 @@ with col_caracteristique:
         div[data-testid="stSelectbox"] {
             max-width: 70%;
             width: 100%;
-            padding-bottom: 20px;
         }   
 
         div[data-testid="stSelectbox"] input {
@@ -102,7 +91,6 @@ with col_caracteristique:
         div[data-testid="stNumberInput"] {
             max-width: 70%;
             width: 100%;
-            padding-bottom: 20px;
         }   
         
         div[data-testid="stNumberInput"] input {
@@ -161,64 +149,7 @@ with col_caracteristique:
             step=0.1
         )
 
-    st.markdown("<div style='padding-top: 20px;'></div>",
-        unsafe_allow_html=True)
 
-    st.subheader("Prédiction")
-    
-    if st.button("Prédire la popularité"):
-
-        donnees = pd.DataFrame([{
-            "danceability": dansabilite,
-            "duration_ms": duree,
-            "tempo": tempo,
-            "energy": energie,
-            "loudness": volume,
-            "track_genre": genre
-        }])
-
-    prediction = "modele.predict(donnees)[0]" #À changer
-
-    st.markdown(
-    f"""
-    <div style="
-        background-color: #0e2f24;
-        color: #7ed5b0;
-        padding: 15px 50px 15px 15px;
-        border-radius: 10px;
-        font-size: 20px;
-        width: 70%;
-    ">
-        Popularité prédite : 
-    </div>
-    """,
-    unsafe_allow_html=True) #À changer {prediction:.1f}/100
-
-
-# COLONNE DE DROITE (Importance des caractéristiques)
-with col_importance:
+# COLONNE DE DROITE
+with col_droite:
     st.subheader("Importance des caractéristiques")
-    
-
-
-st.markdown("<div style='padding-top: 40px;'></div>",
-    unsafe_allow_html=True)
-    
-st.subheader("Historique des prédictions")
-col_chanson, col_score = st.columns([1, 2])
-
-with col_chanson:
-    st.markdown(
-    "<h4> Chanson </h4>",
-    unsafe_allow_html=True)
-
-    for chanson in "chanson": #À changer historique_chanson
-        st.write("chanson - chanteur")  #À changer f"{chanson} - {chanteur}"
-
-with col_score:
-    st.markdown(
-    "<h4> Score </h4>",
-    unsafe_allow_html=True)
-
-    for chanson in "chanson": #À changer historique_chanson
-        st.write("prediction")  #À changer

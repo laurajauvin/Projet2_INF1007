@@ -2,6 +2,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.pipeline import make_pipeline
+from sklearn.ensemble import RandomForestRegressor
+import json
+import joblib
+import os
+
+
+
 
 # 1. Charger le dataset original
 df = pd.read_csv("dataset.csv")
@@ -140,5 +150,77 @@ y_reference = [moyenne] * len(y_test)
 
 #Calcul de la métrique d'évaluation MAE
 #Compare les prédictions aux vraies popularités dans y_test
-mae_reference = round(mean_absolute_error(y_test, y_reference), 2)
+mae_reference = mean_absolute_error(y_test, y_reference)
 
+
+#Volet 2.5: Entraîner et évaluer
+
+#Transformation de track_genre en valeurs numériques; garde les autres colonnes numériques (remainder = "passthrough")
+transformation = ColumnTransformer(transformers= [("genre", OneHotEncoder(handle_unknown = "ignore"), ["track_genre"])], remainder = "passthrough")
+
+#Relier la transformation au modèle de forêt aléatoire
+modele = make_pipeline(transformation, RandomForestRegressor(n_estimators=100, random_state=42, n_jobs = -1))
+
+# #Entraîner le modèle avec les données d'entraînement
+modele.fit(x_train, y_train)
+
+#Prédire la popularité des chansons du test
+y_prediction = modele.predict(x_test)
+
+#Évaluer les prédictions avec la MAE
+mae_modele = mean_absolute_error(y_test, y_prediction)
+
+#Afficher et comparer les deux MAE
+print("MAE de référence:", round(mae_reference,2))
+print("MAE du modèle de prédiction", round(mae_modele,2))
+
+
+
+#Création du graphique de comparaison "prédit contre réel"
+
+plt.figure(figsize=(7, 7))
+plt.scatter(y_test, y_prediction, alpha=0.3)
+
+# Ligne correspondant à des prédictions parfaites
+plt.plot([0, 100], [0, 100], "r--", label="Prédiction parfaite")
+
+plt.xlabel("Popularité réelle")
+plt.ylabel("Popularité prédite")
+plt.title("Popularité réelle et prédite")
+plt.xlim(0, 100)
+plt.ylim(0, 100)
+plt.legend()
+plt.show()
+
+
+#Volet 2.6: Sauvegarde
+chemin_modele = os.path.join("modeles", "modele_popularite.joblib")
+chemin_metadonnees = os.path.join("modeles", "metadonnees.json")
+
+#Sauvegarder le pipeline entraîné
+joblib.dump(modele, chemin_modele, compress=3)
+
+# Préparer les métadonnées à partir des données d'entraînement
+colonnes_numeriques = x_train.select_dtypes(include="number").columns
+
+metadonnees = {
+    "cible": "popularity",
+    "colonnes_entree": x_train.columns.tolist(),
+    "genres_possibles": sorted(x_train["track_genre"].dropna().unique().tolist()),
+    "intervalles_numeriques": {
+        colonne: {
+            "min": float(x_train[colonne].min()),
+            "max": float(x_train[colonne].max())
+        }
+        for colonne in colonnes_numeriques
+    },
+    "metriques": {
+        "MAE_modele": float(mae_modele),
+        "MAE_reference": float(mae_reference)
+    }
+}
+
+# Écrire les métadonnées dans le fichier JSON
+
+with open(chemin_metadonnees,"w", encoding = "utf-8") as f:
+    json.dump(metadonnees, f, ensure_ascii=False, indent=4)

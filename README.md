@@ -39,9 +39,14 @@ Nous avons conservé les valeurs manquantes dans artists, album_name et track_na
 Après le nettoyage, notre jeu de données contient 29 947 chansons.
 
 ----Définition du problème----
-Notre variable cible est la popularité d'une chanson (popularity). Comme nous cherchons une valeur numérique, il s'agit d'un problème de régression linéaire. Le modèle choisi est donc la régression linéaire, car c'est un modèle simple pour prédire une valeur numérique. Nous avons choisi le MAE comme métrique d'évaluation, car il mesure l'écart absolu moyen entre les valeurs de popularité prédites par notre modèle et les valeurs réelles. Cette métrique est facile à interpréter puisque la popularité est mesurée sur une échelle de 0 à 100. Par exemple, un MAE de 8 signifie que les prédictions s'écartent en moyenne de 8 points des valeurs réelles.
+
+Notre variable cible est la popularité d'une chanson (popularity). Comme nous cherchons une valeur numérique, il s'agit d'un problème de régression. Le modèle choisi est une forêt aléatoire de régression (RandomForestRegressor). Elle prédit une valeur numérique et peut apprendre des relations plus complexes entre les caractéristiques des chansons et leur popularité. Nous avons choisi le MAE comme métrique d'évaluation, car il mesure l'écart absolu moyen entre les valeurs de popularité prédites par notre modèle et les valeurs réelles. Cette métrique est facile à interpréter puisque la popularité est mesurée sur une échelle de 0 à 100. Par exemple, un MAE de 8 signifie que les prédictions s'écartent en moyenne de 8 points des valeurs réelles.
 
 
 ---- Séparation des données ----
 
 Après avoir nettoyé notre dataset, nous avons séparé les 29 947 chansons en deux ensembles : 80 % pour l'entraînement et 20 % pour les tests. Les données d'entraînement permettent au modèle d'apprendre les relations entre les caractéristiques musicales et la popularité des chansons. Les données de test servent ensuite à évaluer sa capacité à prédire la popularité de chansons qu'il n'a pas utilisées pendant son apprentissage. Nous avons utilisé random_state=42 afin de rendre notre séparation reproductible.
+
+----Entraînement et évaluation----
+
+Sur l’ensemble de test, la forêt aléatoire obtient une MAE de 12,98, contre 19,01 pour la référence basée sur la moyenne. Elle réduit donc l’erreur moyenne d’environ 6 points de popularité et fait mieux que cette référence. Le graphique prédit contre réel montre que le modèle suit partiellement la tendance, mais que les prédictions restent dispersées autour de la diagonale. Elles sont concentrées surtout entre 10 et 60 : le modèle surestime souvent les chansons dont la popularité réelle est très basse et sous-estime les plus populaires. La MAE indique une erreur absolue moyenne d’environ 13 points. Les différentes caractéristiques audio et le genre aident le modèle dans sa prédiction, puisqu’il fait mieux que la référence, mais elles ne suffisent pas à prédire précisément la popularité de chaque chanson. 
