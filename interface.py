@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import joblib
+
+modele = joblib.load("modeles/modele_popularite.joblib")
 
 # Configuration de la page
 st.set_page_config(
@@ -8,6 +11,8 @@ st.set_page_config(
     page_icon="🎵",
     layout="wide"
 )
+
+#Taille du texte
 
 st.markdown("""
     <style>
@@ -34,6 +39,11 @@ st.markdown("""
     div[data-testid="stText"] pre {
         font-size: 20px !important;
     }
+
+    div[data-testid="stMarkdownContainer"] p {
+        font-size: 20px !important;
+    }
+
     </style>
     """, unsafe_allow_html=True)
 
@@ -52,11 +62,14 @@ st.markdown(
 
 #Diviser l'interface en deux colonnes
 
-col_gauche, col_droite = st.columns([1, 1])
+col_caracteristique, col_importance = st.columns([1, 1])
 
-# COLONNE DE GAUCHE
-with col_gauche:
+# COLONNE DE GAUCHE (Caractéristiques musicales)
+with col_caracteristique:
     st.subheader("Caractéristiques musicales")
+    st.markdown("<div style='padding-top: 10px;'></div>",
+        unsafe_allow_html=True)
+
     
     sous_col_gauche, sous_col_droite = st.columns([1, 1])
     
@@ -70,6 +83,7 @@ with col_gauche:
         div[data-testid="stSelectbox"] {
             max-width: 70%;
             width: 100%;
+            padding-bottom: 20px;
         }   
 
         div[data-testid="stSelectbox"] input {
@@ -91,6 +105,7 @@ with col_gauche:
         div[data-testid="stNumberInput"] {
             max-width: 70%;
             width: 100%;
+            padding-bottom: 20px;
         }   
         
         div[data-testid="stNumberInput"] input {
@@ -149,7 +164,131 @@ with col_gauche:
             step=0.1
         )
 
+    st.markdown("<div style='padding-top: 20px;'></div>",
+        unsafe_allow_html=True)
 
-# COLONNE DE DROITE
-with col_droite:
+    st.subheader("Prédiction")
+    
+    if st.button("Prédire la popularité"):
+
+        donnees = pd.DataFrame([{
+            "danceability": dansabilite,
+            "duration_ms": duree,
+            "tempo": tempo,
+            "energy": energie,
+            "loudness": volume,
+            "track_genre": genre
+        }])
+
+    prediction = "modele.predict(donnees)[0]" #À changer
+
+    st.markdown(
+    f"""
+    <div style="
+        background-color: #0e2f24;
+        color: #7ed5b0;
+        padding: 15px 50px 15px 15px;
+        border-radius: 10px;
+        font-size: 20px;
+        width: 70%;
+    ">
+        Popularité prédite : 
+    </div>
+    """,
+    unsafe_allow_html=True) #À changer {prediction:.1f}/100
+
+
+# COLONNE DE DROITE (Importance des caractéristiques)
+with col_importance:
     st.subheader("Importance des caractéristiques")
+
+    # Récupérer le modèle et le préprocesseur
+    random_forest = modele.named_steps["randomforestregressor"]
+    preprocesseur = modele.named_steps["columntransformer"]
+
+    importances = random_forest.feature_importances_
+    noms = preprocesseur.get_feature_names_out()
+
+    # Regrouper les importances par caractéristique
+    importances_caracteristiques = {
+        "Dansabilité": 0,
+        "Énergie": 0,
+        "Tempo": 0,
+        "Volume": 0,
+        "Durée": 0,
+        "Genre musical": 0
+    }
+
+    for nom, importance in zip(noms, importances):
+
+        if "genre__track_genre" in nom:
+            importances_caracteristiques["Genre musical"] += importance
+
+        elif "danceability" in nom:
+            importances_caracteristiques["Dansabilité"] = importance
+
+        elif "energy" in nom:
+            importances_caracteristiques["Énergie"] = importance
+
+        elif "tempo" in nom:
+            importances_caracteristiques["Tempo"] = importance
+
+        elif "loudness" in nom:
+            importances_caracteristiques["Volume"] = importance
+
+        elif "duration_ms" in nom:
+            importances_caracteristiques["Durée"] = importance
+
+    # Créer un DataFrame et trier les importances
+    df_importances = pd.DataFrame({
+        "Caractéristique": importances_caracteristiques.keys(),
+        "Importance": importances_caracteristiques.values()
+    })
+
+    df_importances = df_importances.sort_values(
+        by="Importance",
+        ascending=True
+    )
+
+    # Créer le graphique
+    fig, ax = plt.subplots(figsize=(7, 4))
+
+    ax.barh(
+        df_importances["Caractéristique"],
+        df_importances["Importance"],
+        color="#C8DDBA"
+    )
+
+    ax.set_xlabel("Importance")
+    ax.set_title("Importance des caractéristiques")
+    ax.set_xlim(0, max(df_importances["Importance"]) * 1.15)
+
+    fig.tight_layout()
+
+    st.pyplot(fig, use_container_width=True)
+
+    plt.close(fig)
+    
+
+
+st.markdown("<div style='padding-top: 40px;'></div>",
+    unsafe_allow_html=True)
+    
+st.subheader("Historique des prédictions")
+col_chanson, col_score = st.columns([1, 2])
+
+with col_chanson:
+    st.markdown(
+    "<h4> Chanson </h4>",
+    unsafe_allow_html=True)
+
+    for chanson in "chanson": #À changer historique_chanson
+        st.write("chanson - chanteur")  #À changer f"{chanson} - {chanteur}"
+
+with col_score:
+    st.markdown(
+    "<h4> Score </h4>",
+    unsafe_allow_html=True)
+
+    for chanson in "chanson": #À changer historique_chanson
+        st.write("prediction")  #À changer

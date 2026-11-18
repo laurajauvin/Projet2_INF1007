@@ -224,3 +224,45 @@ metadonnees = {
 
 with open(chemin_metadonnees,"w", encoding = "utf-8") as f:
     json.dump(metadonnees, f, ensure_ascii=False, indent=4)
+
+#Pour acceder avec l'interface
+
+# Récupérer le modèle Random Forest et le préprocesseur
+random_forest = modele.named_steps["randomforestregressor"]
+preprocesseur = modele.named_steps["columntransformer"]
+
+# Récupérer les importances des caractéristiques
+importances = random_forest.feature_importances_
+
+# Récupérer les noms des colonnes après transformation
+noms = preprocesseur.get_feature_names_out()
+
+# Créer un dictionnaire pour regrouper les importances
+importances_caracteristiques = {
+    "Dansabilité": 0,
+    "Énergie": 0,
+    "Tempo": 0,
+    "Volume": 0,
+    "Durée": 0,
+    "Genre musical": 0
+}
+
+for nom, importance in zip(noms, importances):
+
+    if "genre__track_genre" in nom:
+        importances_caracteristiques["Genre musical"] += importance
+
+    elif "remainder__danceability" in nom:
+        importances_caracteristiques["Dansabilité"] = importance
+
+    elif "remainder__energy" in nom:
+        importances_caracteristiques["Énergie"] = importance
+
+    elif "remainder__tempo" in nom:
+        importances_caracteristiques["Tempo"] = importance
+
+    elif "remainder__loudness" in nom:
+        importances_caracteristiques["Volume"] = importance
+
+    elif "remainder__duration_ms" in nom:
+        importances_caracteristiques["Durée"] = importance
