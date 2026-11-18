@@ -3,7 +3,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import joblib
 
+if "historique" not in st.session_state:
+    st.session_state.historique = []
+
 modele = joblib.load("modeles/modele_popularite.joblib")
+
+df = pd.read_csv("dataset_30000_clean.csv")
 
 # Configuration de la page
 st.set_page_config(
@@ -11,6 +16,17 @@ st.set_page_config(
     page_icon="🎵",
     layout="wide"
 )
+
+# Marges générales de l'application
+st.markdown("""
+<style>
+    [data-testid="stMainBlockContainer"] {
+        padding-left: 9rem !important;
+        padding-right: 9rem !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 
 #Taille du texte
 
@@ -75,6 +91,29 @@ with col_caracteristique:
     
     st.markdown("""
         <style>
+
+        div[data-testid="stTextInput"] label p{
+            font-size: 23px !important;
+            color: var(--text-color) ;
+        }
+
+        div[data-testid="stTextInput"] {
+            max-width: 70%;
+            width: 100%;
+            padding-bottom: 20px;
+        }   
+        
+        div[data-testid="stTextInput"] input {
+            width: 100%;
+            box-sizing: border-box;
+            background-color: var(--secondary-background-color);
+            color: var(--text-color);
+            border-radius: 20px;
+            border: none;
+            font-size: 17px
+        }
+
+
         div[data-testid="stSelectbox"] label p{
             font-size: 23px !important;
             color: var(--text-color) ;
@@ -93,7 +132,7 @@ with col_caracteristique:
             color: var(--text-color);
             border-radius: 20px;
             border: none;
-            font-size: 18px
+            font-size: 17px
         }
 
 
@@ -115,14 +154,16 @@ with col_caracteristique:
             color: var(--text-color);
             border-radius: 20px;
             border: none;
-            font-size: 18px
+            font-size: 17px
         }
+
         </style>
     """, unsafe_allow_html=True)
 
     with sous_col_gauche:
 
-        df = pd.read_csv("dataset_30000_clean.csv")
+        chanson = st.text_input("Chanson")
+
         genres = sorted(df["track_genre"].unique())
 
         genre = st.selectbox(
@@ -146,6 +187,9 @@ with col_caracteristique:
         )
 
     with sous_col_droite:
+
+        artiste = st.text_input("Artiste")
+
         tempo = st.number_input(
             "Tempo (bpm)",
             min_value=1.0,
@@ -164,43 +208,61 @@ with col_caracteristique:
             step=0.1
         )
 
-    st.markdown("<div style='padding-top: 20px;'></div>",
+
+#Prédictions
+
+    st.markdown("<div style='padding-top: 15px;'></div>",
         unsafe_allow_html=True)
 
     st.subheader("Prédiction")
     
+
     if st.button("Prédire la popularité"):
 
-        donnees = pd.DataFrame([{
-            "danceability": dansabilite,
-            "duration_ms": duree,
-            "tempo": tempo,
-            "energy": energie,
-            "loudness": volume,
-            "track_genre": genre
-        }])
+        if genre is None:
+            st.warning("Veuillez sélectionner un genre musical.")
 
-    prediction = "modele.predict(donnees)[0]" #À changer
+        else:
+            donnees = pd.DataFrame([{
+                "danceability": dansabilite,
+                "duration_ms": duree,
+                "tempo": tempo,
+                "energy": energie,
+                "loudness": volume,
+                "track_genre": genre
+            }])
 
-    st.markdown(
-    f"""
-    <div style="
-        background-color: #0e2f24;
-        color: #7ed5b0;
-        padding: 15px 50px 15px 15px;
-        border-radius: 10px;
-        font-size: 20px;
-        width: 70%;
-    ">
-        Popularité prédite : 
-    </div>
-    """,
-    unsafe_allow_html=True) #À changer {prediction:.1f}/100
+            prediction = modele.predict(donnees)[0]
+
+            st.session_state.historique.append({
+                "chanson": chanson,
+                "artiste": artiste,
+                "prediction": round(prediction, 1)
+            })
+                
+            st.markdown(
+                f"""
+                <div style="
+                    background-color: #0e2f24;
+                    color: #7ed5b0;
+                    padding: 15px;
+                    border-radius: 10px;
+                    font-size: 20px;
+                    width: 70%;
+                ">
+                    Popularité prédite : {prediction:.1f}/100
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
 
 # COLONNE DE DROITE (Importance des caractéristiques)
 with col_importance:
     st.subheader("Importance des caractéristiques")
+
+    st.markdown("<div style='padding-top: 20px;'></div>",
+        unsafe_allow_html=True)
 
     # Récupérer le modèle et le préprocesseur
     random_forest = modele.named_steps["randomforestregressor"]
@@ -251,15 +313,22 @@ with col_importance:
     )
 
     # Créer le graphique
-    fig, ax = plt.subplots(figsize=(7, 4))
+    fig, ax = plt.subplots(figsize=(7, 5.5))
 
     ax.barh(
         df_importances["Caractéristique"],
         df_importances["Importance"],
-        color="#C8DDBA"
+        color= "#665388"
     )
 
-    ax.set_xlabel("Importance")
+    for i, valeur in enumerate(df_importances["Importance"]):
+        ax.text(
+            valeur,
+            i,
+            f" {valeur:.3f}",
+            va="center")
+
+    ax.set_xlabel("Importance relative")
     ax.set_title("Importance des caractéristiques")
     ax.set_xlim(0, max(df_importances["Importance"]) * 1.15)
 
@@ -269,26 +338,25 @@ with col_importance:
 
     plt.close(fig)
     
+#Historique des predictions
 
+    st.markdown("<div style='padding-top: 40px;'></div>",
+        unsafe_allow_html=True)
 
-st.markdown("<div style='padding-top: 40px;'></div>",
-    unsafe_allow_html=True)
-    
-st.subheader("Historique des prédictions")
-col_chanson, col_score = st.columns([1, 2])
+    st.subheader("Historique des prédictions")
 
-with col_chanson:
-    st.markdown(
-    "<h4> Chanson </h4>",
-    unsafe_allow_html=True)
+    col_chanson, col_score = st.columns([2, 1])
 
-    for chanson in "chanson": #À changer historique_chanson
-        st.write("chanson - chanteur")  #À changer f"{chanson} - {chanteur}"
+    with col_chanson:
+        st.markdown("#### Chanson")
+    with col_score:
+        st.markdown("#### Score")
 
-with col_score:
-    st.markdown(
-    "<h4> Score </h4>",
-    unsafe_allow_html=True)
+    for resultat in st.session_state.historique:
+        col_chanson, col_score = st.columns([2, 1])
 
-    for chanson in "chanson": #À changer historique_chanson
-        st.write("prediction")  #À changer
+        with col_chanson:
+            st.write(f'{resultat["chanson"]} - {resultat["artiste"]}')
+
+        with col_score:
+            st.write(f'{resultat["prediction"]}/100')
