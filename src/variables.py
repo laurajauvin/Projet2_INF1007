@@ -19,6 +19,11 @@ class Variable(ABC):
         """Renvoie le nom de la variable pour l'afficher sous forme de texte."""
         return self._nom
 
+    @property
+    def nom(self) -> str:
+        """Renvoie le nom de la variable."""
+        return self._nom
+
 class VariableNumerique(Variable):
     """Variable dont la valeur doit être numérique et respecter un intervalle."""
 
@@ -29,8 +34,8 @@ class VariableNumerique(Variable):
         if minimum > maximum:
             raise ErreurValidation("Le minimum ne peut pas dépasser le maximum.")
 
-        self._minimum = minimum
-        self._maximum = maximum
+        self.__minimum = minimum
+        self.__maximum = maximum
 
     def valider(self, valeur: object)-> None:
         """Vérifie que la valeur est un nombre fini dans l'intervalle permis."""
@@ -41,10 +46,10 @@ class VariableNumerique(Variable):
         if not math.isfinite(valeur):
             raise ErreurValidation(f"{self._nom} doit être une valeur finie.")
 
-        if not self._minimum <= valeur <= self._maximum:
+        if not self.__minimum <= valeur <= self.__maximum:
             raise ErreurValidation(
                 f"{self._nom} doit être entre "
-                f"{self._minimum} et {self._maximum}."
+                f"{self.__minimum} et {self.__maximum}."
             )
 
 class VariableCategorielle(Variable):
@@ -67,6 +72,12 @@ class VariableCategorielle(Variable):
             raise ErreurValidation(f"{valeur} n'est pas une valeur autorisée pour {self._nom}.")
     
     
-        
+class ValidateurVariables:
+    """Regroupe les variables à valider."""
 
-        
+    def __init__(self, variables: list[Variable]) -> None:
+        self._variables = variables
+
+    def valider_tout(self, valeurs: dict[str, object]) -> None:
+        for variable in self._variables:
+            variable.valider(valeurs[variable.nom])
