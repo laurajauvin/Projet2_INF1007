@@ -17,7 +17,6 @@ COLONNES_ENTREE = [
     "track_genre",
 ]
 
-df = charger_donnees("dataset_30000_clean.csv")
 
 #Fixture: charge le dataset nettoyé et en choisit un petit échantillon pour éviter que les tests ne prennent trop de temps
 @pytest.fixture(scope = "module") #Avec scope="module", les 60 lignes sont préparées une fois, puis réutilisées pour les autres tests de test_modele.py (évite de tout recréer l'échantillon à chaque fois)

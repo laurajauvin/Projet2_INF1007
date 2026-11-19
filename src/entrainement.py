@@ -11,7 +11,7 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.ensemble import RandomForestRegressor
-from donnees import charger_donnees
+from .donnees import charger_donnees
 
 
 #Volet 2.4: Établir une référence
