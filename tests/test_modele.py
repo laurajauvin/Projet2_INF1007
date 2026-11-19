@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from src.donnees import charger_donnees
-from src.entrainement import (calculer_importances, calculer_mae, calculer_reference, creer_metadonnees, creer_modele, entrainer_modele, predire, sauvegarder_resultats)
+from src.entrainement import (calculer_importances, calculer_mae, calculer_mae_numpy, calculer_reference, creer_metadonnees, creer_modele, entrainer_modele, predire, sauvegarder_resultats)
 from src.validation import valider_entrees, ErreurValidation
 
 #Colonnes que le modèle utilise comme entrée
@@ -45,6 +45,16 @@ def test_reference_calcule_mae() -> None:
 
     assert resultat == pytest.approx(10.0)
 
+def test_mae_numpy_identique_a_sklearn() -> None:
+    """Vérifie que le calcul NumPy donne le même résultat que scikit-learn."""
+
+    y_test = pd.Series([10, 20, 30, 40])
+    y_prediction = np.array([12, 18, 25, 45])
+
+    resultat_numpy = calculer_mae_numpy(y_test, y_prediction)
+    resultat_sklearn = calculer_mae(y_test, y_prediction)
+
+    assert resultat_numpy == pytest.approx(resultat_sklearn)
 
 def test_reference_refuse_train_vide() -> None:
     """Vérifie qu'une erreur est levée si y_train est vide."""
@@ -99,6 +109,7 @@ def test_modele_entraine_produit_une_prediction_par_chanson(
     assert len(predictions) == len(df_test)
     assert np.all(predictions >= 0)
     assert np.all(predictions <= 100)
+    assert np.all(np.isfinite(predictions))
 
 
 def test_importances_sont_regroupees(
@@ -109,7 +120,7 @@ def test_importances_sont_regroupees(
 
     assert "Genre musical" in importances
     assert sum(importances.values()) == pytest.approx(1.0)
-
+    assert len(importances) == 6
 
 def test_metadonnees_contiennent_genres_et_intervalles(
     df_test: pd.DataFrame,
