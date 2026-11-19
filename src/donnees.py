@@ -1,7 +1,6 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-from .exceptions import DonneeInvalideError, GenreInconnuError
 
 dossier_src = os.path.dirname(os.path.abspath(__file__))
 dossier_projet = os.path.dirname(dossier_src)
