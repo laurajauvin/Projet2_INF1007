@@ -1,7 +1,7 @@
-import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
 import joblib
+import pandas as pd
+import streamlit as st
+import matplotlib.pyplot as plt
 
 if "historique" not in st.session_state:
     st.session_state.historique = []
