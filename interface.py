@@ -2,13 +2,11 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import joblib
+import json
+import os
 
-if "historique" not in st.session_state:
-    st.session_state.historique = []
-
-modele = joblib.load("modeles/modele_popularite.joblib")
-
-df = pd.read_csv("dataset_30000_clean.csv")
+# *** from validation import valider_entrees, ErreurValidation *** À ajouter lorsque le fichier validation est créé
+# *** from modele import predictions *** À ajouter lorsque le fichier modèle est créé
 
 # Configuration de la page
 st.set_page_config(
@@ -16,6 +14,107 @@ st.set_page_config(
     page_icon="🎵",
     layout="wide"
 )
+
+# Construire les chemins des fichiers
+dossier_projet = os.path.dirname(os.path.abspath(__file__))
+
+chemin_metadonnees = os.path.join(
+    dossier_projet, "modeles", "metadonnees.json"
+)
+
+chemin_modele = os.path.join(
+    dossier_projet, "modeles", "modele_popularite.joblib"
+)
+
+chemin_historique = os.path.join(
+    dossier_projet, "historique.csv"
+)
+
+
+# Vérifier que les fichiers nécessaires existent
+if not os.path.exists(chemin_metadonnees):
+    st.error("Le fichier des métadonnées est introuvable.")
+    st.stop()
+
+if not os.path.exists(chemin_modele):
+    st.error("Le fichier du modèle entraîné est introuvable.")
+    st.stop()
+
+
+# Charger les métadonnées
+with open(chemin_metadonnees, "r", encoding="utf-8") as fichier:
+    metadonnees = json.load(fichier)
+
+# Attitrer chaque contrainte à une variable
+intervalles = metadonnees["intervalles_numeriques"]
+
+dansabilite_min = intervalles["danceability"]["min"]
+dansabilite_max = intervalles["danceability"]["max"]
+
+energie_min = intervalles["energy"]["min"]
+energie_max = intervalles["energy"]["max"]
+
+tempo_min = intervalles["tempo"]["min"]
+tempo_max = intervalles["tempo"]["max"]
+
+volume_min = intervalles["loudness"]["min"]
+volume_max = intervalles["loudness"]["max"]
+
+duree_min = int(intervalles["duration_ms"]["min"])
+duree_max = int(intervalles["duration_ms"]["max"])
+
+genres = metadonnees["genres_possibles"]
+
+# Sauvegarde et récupère le modèle déjà entraîné pour le réutiliser
+modele = joblib.load(chemin_modele)
+
+# Charger l'historique existant au démarrage
+if "historique" not in st.session_state:
+
+    st.session_state.historique = []
+
+    if os.path.exists(chemin_historique):
+
+        try:
+            historique_df = pd.read_csv(chemin_historique)
+
+            # Vérifier que les colonnes nécessaires existent
+            colonnes_requises = [
+                "chanson",
+                "artiste",
+                "prediction"
+            ]
+
+            if all(colonne in historique_df.columns
+                   for colonne in colonnes_requises):
+
+                st.session_state.historique = historique_df[
+                    colonnes_requises
+                ].to_dict("records")
+
+            else:
+                st.warning(
+                    "Le fichier historique.csv ne possède pas "
+                    "les colonnes attendues. Un nouvel historique sera utilisé."
+                )
+
+        except pd.errors.EmptyDataError:
+            st.warning(
+                "Le fichier historique.csv est vide. "
+                "Un nouvel historique sera utilisé."
+            )
+
+        except pd.errors.ParserError:
+            st.warning(
+                "Le fichier historique.csv est mal formaté. "
+                "Un nouvel historique sera utilisé."
+            )
+
+        except UnicodeDecodeError:
+            st.warning(
+                "Le fichier historique.csv ne peut pas être lu "
+                "à cause de son encodage."
+            )
 
 # Marges générales de l'application
 st.markdown("""
@@ -80,7 +179,8 @@ st.markdown(
 
 col_caracteristique, col_importance = st.columns([1, 1])
 
-# COLONNE DE GAUCHE (Caractéristiques musicales)
+# Colonne gauche des caractéristiques
+
 with col_caracteristique:
     st.subheader("Caractéristiques musicales")
     st.markdown("<div style='padding-top: 10px;'></div>",
@@ -93,7 +193,7 @@ with col_caracteristique:
         <style>
 
         div[data-testid="stTextInput"] label p{
-            font-size: 23px !important;
+            font-size: 22px !important;
             color: var(--text-color) ;
         }
 
@@ -115,14 +215,14 @@ with col_caracteristique:
 
 
         div[data-testid="stSelectbox"] label p{
-            font-size: 23px !important;
+            font-size: 22px !important;
             color: var(--text-color) ;
         }
 
         div[data-testid="stSelectbox"] {
             max-width: 70%;
             width: 100%;
-            padding-bottom: 20px;
+            padding-bottom: 46px;
         }   
 
         div[data-testid="stSelectbox"] input {
@@ -137,14 +237,14 @@ with col_caracteristique:
 
 
         div[data-testid="stNumberInput"] label p{
-            font-size: 23px !important;
+            font-size: 22px !important;
             color: var(--text-color) ;
         }
 
         div[data-testid="stNumberInput"] {
             max-width: 70%;
             width: 100%;
-            padding-bottom: 20px;
+            padding-bottom: 0px
         }   
         
         div[data-testid="stNumberInput"] input {
@@ -157,59 +257,119 @@ with col_caracteristique:
             font-size: 17px
         }
 
+        [data-testid="stCaptionContainer"] {
+            margin-bottom: 0.4rem;
+        }
+
         </style>
     """, unsafe_allow_html=True)
 
     with sous_col_gauche:
 
+        # Chanson
         chanson = st.text_input("Chanson")
 
-        genres = sorted(df["track_genre"].unique())
-
+        # Genre
         genre = st.selectbox(
             "Genre",
             genres,
-            index=None,
+            index = None,
             placeholder="Rechercher un genre..."
-)
-
-        dansabilite = st.number_input(
-            "Dansabilité",
-            min_value=0.0,
-            max_value=1.0,
-            step=0.01
         )
 
-        duree = st.number_input(
-            "Durée (ms)",
-            min_value=1,
-            step=1000
-        )
+        with st.container(gap="xsmall"):
+            # Dansabilité
+            dansabilite = st.number_input(
+                "Dansabilité",
+                min_value = float(dansabilite_min),
+                max_value = float(dansabilite_max),
+                step = 0.01,
+                format = "%.2f"
+            )
+
+            st.caption(
+                f"Valeurs acceptées : {dansabilite_min:.2f} à {dansabilite_max:.2f}"
+            )
+
+        # Durée
+            col_minutes, col_secondes = st.columns(2, gap="xxsmall")
+
+            with col_minutes:
+                minutes = st.number_input(
+                    "Minutes",
+                    min_value=0,
+                    max_value=int(duree_max // 60000),
+                    step=1
+                )
+
+            with col_secondes:
+                secondes = st.number_input(
+                    "Secondes",
+                    min_value=0,
+                    max_value=59,
+                    step=1
+                )
+
+            duree = int((minutes * 60 + secondes) * 1000)
+
+            st.caption(
+                f"Durée acceptée : de {int(duree_min // 60000)} min "
+                f"à {int(duree_max // 60000)} min "
+                f"{int((duree_max % 60000) // 1000)} s"
+            )
+
+
+    # Colonne droite des caractéristiques    
 
     with sous_col_droite:
 
+        # Artiste
         artiste = st.text_input("Artiste")
 
-        tempo = st.number_input(
-            "Tempo (bpm)",
-            min_value=1.0,
-            step=1.0
-        )
 
-        energie = st.number_input(
-            "Énergie",
-            min_value=0.0,
-            max_value=1.0,
-            step=0.01
-        )
+        with st.container(gap="xsmall"):
 
-        volume = st.number_input(
-            "Volume (dB)",
-            step=0.1
-        )
+            # Tempo
+            tempo = st.number_input(
+                "Tempo (bpm)",
+                min_value = float(tempo_min),
+                max_value = float(tempo_max),
+                step = 1.0,
+                format = "%.2f"
+            )
+
+            st.caption(
+                f"Valeurs acceptées : {tempo_min:.2f} à {tempo_max:.2f}"
+            )
+
+            # Energie
+            energie = st.number_input(
+                "Énergie",
+                min_value = float(energie_min),
+                max_value = float(energie_max),
+                step=0.01,
+                format = "%.2f"
+            )
+
+            st.caption(
+                f"Valeurs acceptées : {energie_min:.2f} à {energie_max:.2f}"
+            )
+
+            # Volume
+            volume = st.number_input(
+                "Volume (dB)",
+                min_value = float(volume_min),
+                max_value = float(volume_max),
+                step=0.1,
+                format="%.1f"
+            )
+
+            st.caption(
+                f"Valeurs acceptées : {volume_min:.1f} à {volume_max:.1f}"
+            )
 
 
-#Prédictions
+    #Prédictions
 
     st.markdown("<div style='padding-top: 15px;'></div>",
         unsafe_allow_html=True)
@@ -218,9 +378,24 @@ with col_caracteristique:
     
 
     if st.button("Prédire la popularité"):
+        valeurs = {
+            "danceability": dansabilite,
+            "energy": energie,
+            "tempo": tempo,
+            "loudness": volume,
+            "duration_ms": duree
+        }
 
-        if genre is None:
-            st.warning("Veuillez sélectionner un genre musical.")
+        if chanson.strip() is "": #À enlever
+            st.warning("Veuillez écrire le titre de la chanson.") #À enlever
+
+        #try:
+            #valider_entrees(chanson, artiste, genre, valeurs)
+
+        #except ErreurValidation as erreur:
+            #st.error(str(erreur))
+
+
 
         else:
             donnees = pd.DataFrame([{
@@ -232,13 +407,28 @@ with col_caracteristique:
                 "track_genre": genre
             }])
 
-            prediction = modele.predict(donnees)[0]
+            prediction = modele.predict(donnees)[0] #À remplacer pas
 
-            st.session_state.historique.append({
+            #prediction = predire_popularite(modele, donnees)
+
+            # Créer une nouvelle entrée
+            nouveau_resultat = {
                 "chanson": chanson,
                 "artiste": artiste,
                 "prediction": round(prediction, 1)
-            })
+            }
+
+            # Ajouter à l'historique en mémoire
+            st.session_state.historique.append(nouveau_resultat)
+
+            # Sauvegarder tout l'historique dans le CSV
+            historique_df = pd.DataFrame(st.session_state.historique)
+
+            historique_df.to_csv(
+                chemin_historique,
+                index=False,
+                encoding="utf-8-sig"
+            )
                 
             st.markdown(
                 f"""
@@ -330,6 +520,19 @@ with col_importance:
 
     ax.set_xlabel("Importance relative")
     ax.set_title("Importance des caractéristiques")
+    ax.set_ylabel("Caractéristiques musicales")
+    ax.tick_params(
+        axis="both",
+        labelsize=11
+    )
+
+    ax.grid(
+        axis="x",
+        linestyle="--",
+        alpha=0.4
+    )
+
+    ax.set_axisbelow(True)
     ax.set_xlim(0, max(df_importances["Importance"]) * 1.15)
 
     fig.tight_layout()
