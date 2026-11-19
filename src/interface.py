@@ -5,8 +5,8 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import json
 import os
-from entrainement import predire_popularite
-from validation import valider_entrees, ErreurValidation
+from .entrainement import predire_popularite
+from .validation import valider_entrees, ErreurValidation
 
 
 def afficher_interface() -> None:
@@ -286,8 +286,6 @@ def afficher_interface() -> None:
                 # Dansabilité
                 dansabilite = st.number_input(
                     "Dansabilité",
-                    min_value = float(dansabilite_min),
-                    max_value = float(dansabilite_max),
                     step = 0.01,
                     format = "%.2f"
                 )
@@ -302,16 +300,12 @@ def afficher_interface() -> None:
                 with col_minutes:
                     minutes = st.number_input(
                         "Minutes",
-                        min_value=0,
-                        max_value=int(duree_max // 60000),
                         step=1
                     )
 
                 with col_secondes:
                     secondes = st.number_input(
                         "Secondes",
-                        min_value=0,
-                        max_value=59,
                         step=1
                     )
 
@@ -337,8 +331,6 @@ def afficher_interface() -> None:
                 # Tempo
                 tempo = st.number_input(
                     "Tempo (bpm)",
-                    min_value = float(tempo_min),
-                    max_value = float(tempo_max),
                     step = 1.0,
                     format = "%.2f"
                 )
@@ -350,8 +342,6 @@ def afficher_interface() -> None:
                 # Energie
                 energie = st.number_input(
                     "Énergie",
-                    min_value = float(energie_min),
-                    max_value = float(energie_max),
                     step=0.01,
                     format = "%.2f"
                 )
@@ -363,8 +353,6 @@ def afficher_interface() -> None:
                 # Volume
                 volume = st.number_input(
                     "Volume (dB)",
-                    min_value = float(volume_min),
-                    max_value = float(volume_max),
                     step=0.1,
                     format="%.1f"
                 )
@@ -396,8 +384,6 @@ def afficher_interface() -> None:
 
             except ErreurValidation as erreur:
                 st.error(str(erreur))
-
-
 
             else:
                 donnees = pd.DataFrame([{

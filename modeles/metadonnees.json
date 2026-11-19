@@ -149,5 +149,13 @@
     "metriques": {
         "MAE_modele": 12.984903340329675,
         "MAE_reference": 19.009677738558153
+    },
+    "importance_caracteristiques": {
+        "Dansabilité": 0.11996730809137447,
+        "Énergie": 0.11481583078189363,
+        "Tempo": 0.12339623034334996,
+        "Volume": 0.12386863955719435,
+        "Durée": 0.1268655238708259,
+        "Genre musical": 0.3910864673553618
     }
 }

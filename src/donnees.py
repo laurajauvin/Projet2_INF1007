@@ -1,7 +1,6 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-from exceptions import DonneeInvalideError, GenreInconnuError
 
 dossier_src = os.path.dirname(os.path.abspath(__file__))
 dossier_projet = os.path.dirname(dossier_src)
@@ -37,7 +36,7 @@ if __name__ == "__main__": #empêche l'exécution du sample et nettoyage de donn
     df_30k = df.sample(n=30000, random_state=42)
 
     # Enregistrer le nouveau dataset
-    chemin_echantillon = os.path.join(dossier_projet, "dataset_30000.csv")
+    chemin_echantillon = os.path.join(dossier_donnees, "dataset_30000.csv")
 
     with open(chemin_echantillon, "w", encoding="utf-8", newline = "") as fichier:
         df_30k.to_csv(fichier, index = False) #écrit le DataFrame dans un fichier CSv
@@ -112,7 +111,7 @@ if __name__ == "__main__": #empêche l'exécution du sample et nettoyage de donn
         (df["tempo"] == 0).sum())
 
     # Enregistrer le dataset nettoyé
-    chemin_nettoye = os.path.join(dossier_projet, "dataset_30000_clean.csv")
+    chemin_nettoye = os.path.join(dossier_donnees, "dataset_30000_clean.csv")
 
     with open(chemin_nettoye, "w", encoding = "utf-8", newline = "") as fichier:
         df.to_csv(fichier, index=False)

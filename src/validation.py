@@ -76,7 +76,21 @@ def valider_entrees(
 
         # Vérifier que la valeur respecte l'intervalle
         if not minimum <= valeur <= maximum:
+
+            if caracteristique == "duration_ms":
+                minimum_min = int(minimum // 60000)
+                minimum_sec = int((minimum % 60000) // 1000)
+
+                maximum_min = int(maximum // 60000)
+                maximum_sec = int((maximum % 60000) // 1000)
+
+                raise ErreurValidation(
+                    f"La durée doit être entre "
+                    f"{minimum_min} min {minimum_sec} s et "
+                    f"{maximum_min} min {maximum_sec} s."
+                )
+             
             raise ErreurValidation(
                 f"{caracteristique} doit être entre {minimum} et {maximum}."
-            )
+                )
 

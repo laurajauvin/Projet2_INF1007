@@ -11,7 +11,7 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.ensemble import RandomForestRegressor
-from donnees import charger_donnees
+from .donnees import charger_donnees
 
 
 #Volet 2.4: Établir une référence
@@ -67,6 +67,17 @@ def calculer_mae(y_test: pd.Series,y_prediction: np.ndarray) -> float:
     """Calcule la MAE entre les valeurs réelles du test et les prédictions."""
     return float(mean_absolute_error(y_test, y_prediction))
 
+def calculer_mae_numpy(
+    y_test: pd.Series,
+    y_prediction: np.ndarray
+) -> float:
+    """Calcule la MAE à l'aide des opérations vectorisées de NumPy."""
+
+    erreurs = np.abs(
+        np.asarray(y_test) - np.asarray(y_prediction)
+    )
+
+    return float(np.mean(erreurs))
 
 def creer_graphique(y_test: pd.Series, y_prediction: np.ndarray,) -> Figure:
     """Crée et renvoie le graphique de comparaison des popularités réelles et prédites."""
