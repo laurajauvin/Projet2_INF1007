@@ -90,8 +90,7 @@ def valider_entrees(
                     f"{maximum_min} min {maximum_sec} s."
                 )
              
-            else: 
-                raise ErreurValidation(
-                    f"{caracteristique} doit être entre {minimum} et {maximum}."
+            raise ErreurValidation(
+                f"{caracteristique} doit être entre {minimum} et {maximum}."
                 )
 
