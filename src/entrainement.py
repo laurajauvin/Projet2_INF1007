@@ -202,6 +202,18 @@ if __name__ == "__main__":
 
     sauvegarder_resultats(modele,metadonnees,chemin_modele,chemin_metadonnees)
 
+# Prediction de popularite
+def predire_popularite(modele, donnees):
+    """
+    Prédit la popularité d'une chanson.
 
+    Args:
+        modele: Modèle de prédiction entraîné.
+        donnees: Caractéristiques de la chanson à prédire.
 
+    Returns:
+        La popularité prédite.
+    """
+    prediction = modele.predict(donnees)[0]
 
+    return prediction

@@ -1,10 +1,11 @@
 import joblib
 import pandas as pd
+import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 import json
 import os
-from entrainement import predire
+from entrainement import predire_popularite
 from validation import valider_entrees, ErreurValidation
 
 
@@ -408,13 +409,13 @@ def afficher_interface() -> None:
                     "track_genre": genre
                 }])
 
-                prediction = predire(modele, donnees)
+                prediction = predire_popularite(modele, donnees)
 
                 # Créer une nouvelle entrée
                 nouveau_resultat = {
                     "chanson": chanson,
                     "artiste": artiste,
-                    "prediction": round(prediction, 1)
+                    "prediction": np.round(prediction, 1)
                 }
 
                 # Ajouter à l'historique en mémoire
@@ -542,7 +543,7 @@ def afficher_interface() -> None:
         
     #Historique des predictions
 
-        st.markdown("<div style='padding-top: 60px;'></div>",
+        st.markdown("<div style='padding-top: 58px;'></div>",
             unsafe_allow_html=True)
 
         st.subheader("Historique des prédictions")
