@@ -5,8 +5,7 @@ import pandas as pd
 import pytest
 from src.donnees import charger_donnees
 from src.entrainement import (calculer_importances, calculer_mae, calculer_reference, creer_metadonnees, creer_modele, entrainer_modele, predire, sauvegarder_resultats)
-
-
+from validation import valider_entrees, ErreurValidation
 
 #Colonnes que le modèle utilise comme entrée
 COLONNES_ENTREE = [
@@ -154,3 +153,86 @@ def test_sauvegarde_modele_et_metadonnees(
 
     with open(chemin_json, "r", encoding="utf-8") as fichier:
         assert json.load(fichier) == metadonnees
+
+
+# ------ Tests de validation sur les entrées de l'utilisateur ------
+
+# Données valides pour les tests
+valeurs_valides = {
+    "danceability": 0.5,
+    "energy": 0.8,
+    "tempo": 120.0,
+    "loudness": -10.0,
+    "duration_ms": 180000
+}
+
+
+def test_entrees_valides():
+    valider_entrees(
+        "Ma chanson", "Mon artiste", "pop", valeurs_valides
+    )
+
+
+def test_titre_vide():
+    with pytest.raises(ErreurValidation):
+        valider_entrees("", "Mon artiste", "pop", valeurs_valides)
+
+
+def test_artiste_vide():
+    with pytest.raises(ErreurValidation):
+        valider_entrees("Ma chanson", "", "pop", valeurs_valides)
+
+
+def test_genre_invalide():
+    with pytest.raises(ErreurValidation):
+        valider_entrees(
+            "Ma chanson", "Mon artiste", "jazz-invalide", valeurs_valides
+        )
+
+
+def test_dansabilite_invalide():
+    valeurs = valeurs_valides.copy()
+    valeurs["danceability"] = 1.5
+
+    with pytest.raises(ErreurValidation):
+        valider_entrees("Ma chanson", "Mon artiste", "pop", valeurs)
+
+
+def test_energie_invalide():
+    valeurs = valeurs_valides.copy()
+    valeurs["energy"] = -0.5
+
+    with pytest.raises(ErreurValidation):
+        valider_entrees("Ma chanson", "Mon artiste", "pop", valeurs)
+
+
+def test_tempo_invalide():
+    valeurs = valeurs_valides.copy()
+    valeurs["tempo"] = 300.0
+
+    with pytest.raises(ErreurValidation):
+        valider_entrees("Ma chanson", "Mon artiste", "pop", valeurs)
+
+
+def test_volume_invalide():
+    valeurs = valeurs_valides.copy()
+    valeurs["loudness"] = 5.0
+
+    with pytest.raises(ErreurValidation):
+        valider_entrees("Ma chanson", "Mon artiste", "pop", valeurs)
+
+
+def test_duree_invalide():
+    valeurs = valeurs_valides.copy()
+    valeurs["duration_ms"] = 10000000
+
+    with pytest.raises(ErreurValidation):
+        valider_entrees("Ma chanson", "Mon artiste", "pop", valeurs)
+
+
+def test_valeur_non_numerique():
+    valeurs = valeurs_valides.copy()
+    valeurs["tempo"] = "rapide"
+
+    with pytest.raises(ErreurValidation):
+        valider_entrees("Ma chanson", "Mon artiste", "pop", valeurs)

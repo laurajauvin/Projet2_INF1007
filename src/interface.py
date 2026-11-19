@@ -4,10 +4,9 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import json
 import os
-
-
-# *** from validation import valider_entrees, ErreurValidation *** À ajouter lorsque le fichier validation est créé
-# *** from modele import predictions *** À ajouter lorsque le fichier modèle est créé
+from entrainement import predire
+from tests.validation import valider_entrees, ErreurValidation
+from modeles import predictions
 
 # Configuration de la page
 st.set_page_config(
@@ -387,14 +386,11 @@ with col_caracteristique:
             "duration_ms": duree
         }
 
-        if chanson.strip() is "": #À enlever
-            st.warning("Veuillez écrire le titre de la chanson.") #À enlever
+        try:
+            valider_entrees(chanson, artiste, genre, valeurs)
 
-        #try:
-            #valider_entrees(chanson, artiste, genre, valeurs)
-
-        #except ErreurValidation as erreur:
-            #st.error(str(erreur))
+        except ErreurValidation as erreur:
+            st.error(str(erreur))
 
 
 
@@ -408,9 +404,7 @@ with col_caracteristique:
                 "track_genre": genre
             }])
 
-            prediction = modele.predict(donnees)[0] #À remplacer pas
-
-            #prediction = predire_popularite(modele, donnees)
+            prediction = predire(modele, donnees)
 
             # Créer une nouvelle entrée
             nouveau_resultat = {
