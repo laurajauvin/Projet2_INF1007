@@ -1,4 +1,5 @@
 import joblib
+import math
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -66,8 +67,8 @@ def afficher_interface() -> None:
     volume_min = intervalles["loudness"]["min"]
     volume_max = intervalles["loudness"]["max"]
 
-    duree_min = int(intervalles["duration_ms"]["min"])
-    duree_max = int(intervalles["duration_ms"]["max"])
+    duree_min = math.ceil(intervalles["duration_ms"]["min"] / 1000)
+    duree_max = math.floor(intervalles["duration_ms"]["max"] / 1000)   
 
     genres = metadonnees["genres_possibles"]
 
@@ -292,7 +293,7 @@ def afficher_interface() -> None:
                 )
 
                 st.caption(
-                    f"Valeurs acceptées : {dansabilite_min:.2f} à {dansabilite_max:.2f}"
+                    f"Dansabilité acceptée : {dansabilite_min:.2f} à {dansabilite_max:.2f}"
                 )
 
             # Durée
@@ -313,9 +314,9 @@ def afficher_interface() -> None:
                 duree = int((minutes * 60 + secondes) * 1000)
 
                 st.caption(
-                    f"Durée acceptée : de {int(duree_min // 60000)} min "
-                    f"à {int(duree_max // 60000)} min "
-                    f"{int((duree_max % 60000) // 1000)} s"
+                    f"Durée acceptée : de "
+                    f"{duree_min // 60} min {duree_min % 60} s "
+                    f"à {duree_max // 60} min {duree_max % 60} s"
                 )
 
 
@@ -337,7 +338,7 @@ def afficher_interface() -> None:
                 )
 
                 st.caption(
-                    f"Valeurs acceptées : {tempo_min:.2f} à {tempo_max:.2f}"
+                    f"Tempo accepté : {tempo_min:.2f} à {tempo_max:.2f}"
                 )
 
                 # Energie
@@ -348,7 +349,7 @@ def afficher_interface() -> None:
                 )
 
                 st.caption(
-                    f"Valeurs acceptées : {energie_min:.2f} à {energie_max:.2f}"
+                    f"Énergie acceptée : {energie_min:.2f} à {energie_max:.2f}"
                 )
 
                 # Volume
@@ -358,8 +359,11 @@ def afficher_interface() -> None:
                     format="%.1f"
                 )
 
+                volume_min_affiche = math.ceil(volume_min * 10) / 10
+                volume_max_affiche = math.floor(volume_max * 10) / 10
+
                 st.caption(
-                    f"Valeurs acceptées : {volume_min:.1f} à {volume_max:.1f}"
+                    f"Volume accepté : {volume_min_affiche:.1f} à {volume_max_affiche:.1f}"
                 )
 
 
@@ -381,7 +385,7 @@ def afficher_interface() -> None:
             }
 
             try:
-                valider_entrees(chanson, artiste, genre, valeurs)
+                valider_entrees(chanson, artiste, genre, minutes, secondes, valeurs)
 
             except ErreurValidation as erreur:
                 st.error(str(erreur))

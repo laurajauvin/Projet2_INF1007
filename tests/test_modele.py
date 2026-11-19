@@ -7,6 +7,7 @@ from src.donnees import charger_donnees
 from src.entrainement import (calculer_importances, calculer_mae, calculer_mae_numpy, calculer_reference, creer_metadonnees, creer_modele, entrainer_modele, predire, sauvegarder_resultats)
 from src.exceptions import ErreurValidation
 from src.validation import valider_entrees
+from src.variables import VariableNumerique
 
 #Colonnes que le modèle utilise comme entrée
 COLONNES_ENTREE = [
@@ -139,9 +140,11 @@ def test_metadonnees_contiennent_genres_et_intervalles(
     assert set(metadonnees["genres_possibles"]) == set(
         df_test["track_genre"].unique()
     )
-    assert metadonnees["intervalles_numeriques"]["energy"]["min"] == pytest.approx(
-        df_test["energy"].min()
-    )
+    assert metadonnees["intervalles_numeriques"]["energy"]["min"] == 0.0
+    assert metadonnees["intervalles_numeriques"]["energy"]["max"] == 1.0
+
+    assert metadonnees["intervalles_numeriques"]["danceability"]["min"] == 0.0
+    assert metadonnees["intervalles_numeriques"]["danceability"]["max"] == 1.0
 
 
 def test_sauvegarde_modele_et_metadonnees(
@@ -247,3 +250,29 @@ def test_valeur_non_numerique():
 
     with pytest.raises(ErreurValidation):
         valider_entrees("Ma chanson", "Mon artiste", "pop", valeurs)
+
+def test_borne_minimale_acceptee():
+    variable = VariableNumerique("danceability", 0, 1)
+
+    variable.valider(0)
+
+
+def test_borne_maximale_acceptee():
+    variable = VariableNumerique("danceability", 0, 1)
+
+    variable.valider(1)
+
+@pytest.mark.parametrize("valeur", [-0.1, 1.1])
+def test_dansabilite_hors_limites(valeur):
+    variable = VariableNumerique("danceability", 0, 1)
+
+    with pytest.raises(ErreurValidation):
+        variable.valider(valeur)
+
+
+@pytest.mark.parametrize("valeur", [-0.1, 1.1])
+def test_energie_hors_limites(valeur):
+    variable = VariableNumerique("energy", 0, 1)
+
+    with pytest.raises(ErreurValidation):
+        variable.valider(valeur)

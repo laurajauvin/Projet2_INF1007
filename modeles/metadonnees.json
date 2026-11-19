@@ -126,11 +126,11 @@
     ],
     "intervalles_numeriques": {
         "danceability": {
-            "min": 0.0513,
-            "max": 0.98
+            "min": 0.0,
+            "max": 1.0
         },
         "energy": {
-            "min": 2.02e-05,
+            "min": 0.0,
             "max": 1.0
         },
         "tempo": {

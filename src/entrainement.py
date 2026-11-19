@@ -138,19 +138,36 @@ def calculer_importances(modele: Pipeline) -> dict[str, float]:
     return importances_caracteristiques
 
 
-def creer_metadonnees(x_train: pd.DataFrame,mae_modele: float,mae_reference: float,importances: dict[str, float]) -> dict[str, object]:
-    
+
+def creer_metadonnees(
+    x_train: pd.DataFrame,
+    mae_modele: float,
+    mae_reference: float,
+    importances: dict[str, float]
+) -> dict[str, object]:
     """Prépare les colonnes, intervalles et résultats à écrire dans le JSON."""
 
-    # Préparer les métadonnées à partir des données d'entraînement
     colonnes_numeriques = x_train.select_dtypes(include="number").columns
 
-    return {"cible": "popularity","colonnes_entree": x_train.columns.tolist(),"genres_possibles": sorted(x_train["track_genre"].dropna().unique().tolist()),
-            "intervalles_numeriques": {colonne: {
-                "min": float(x_train[colonne].min()),
-                "max": float(x_train[colonne].max()),
-                }
-            for colonne in colonnes_numeriques},
+    intervalles = {
+        colonne: {
+            "min": float(x_train[colonne].min()),
+            "max": float(x_train[colonne].max()),
+        }
+        for colonne in colonnes_numeriques
+    }
+
+    # La dansabilité et l'énergie ont des limites théoriques de 0 à 1.
+    intervalles["danceability"] = {"min": 0.0, "max": 1.0}
+    intervalles["energy"] = {"min": 0.0, "max": 1.0}
+
+    return {
+        "cible": "popularity",
+        "colonnes_entree": x_train.columns.tolist(),
+        "genres_possibles": sorted(
+            x_train["track_genre"].dropna().unique().tolist()
+        ),
+        "intervalles_numeriques": intervalles,
         "metriques": {
             "MAE_modele": mae_modele,
             "MAE_reference": mae_reference,

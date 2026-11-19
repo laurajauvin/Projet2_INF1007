@@ -48,6 +48,8 @@ def valider_entrees(
     chanson: str,
     artiste: str,
     genre: str,
+    minutes: int,
+    secondes: int,
     valeurs: dict[str, int | float]
 ) -> None:
     """Vérifie la validité des entrées de l'utilisateur."""
@@ -59,6 +61,14 @@ def valider_entrees(
     # Vérifier l'artiste
     if not artiste.strip():
         raise ErreurValidation("Veuillez écrire le nom de l'artiste.")
+
+    # Vérifier les minutes:
+    if minutes < 0:
+        raise ErreurValidation("Les minutes ne peuvent pas être négatives.")
+
+    # Vérifier les secondes
+    if not 0 <= secondes <= 59:
+        raise ErreurValidation("Les secondes doivent être entre 0 et 59.")
 
     # Regrouper toutes les valeurs à valider
     valeurs_completes = valeurs.copy()

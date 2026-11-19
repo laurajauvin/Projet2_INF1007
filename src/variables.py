@@ -47,10 +47,21 @@ class VariableNumerique(Variable):
             raise ErreurValidation(f"{self._nom} doit être une valeur finie.")
 
         if not self.__minimum <= valeur <= self.__maximum:
+            if self._nom == "duration_ms":
+                minimum = math.ceil(self.__minimum / 1000)
+                maximum = math.floor(self.__maximum / 1000)
+
+
+                raise ErreurValidation(
+                    f"La durée doit être entre "
+                    f"{minimum // 60} min {minimum % 60} s et "
+                    f"{maximum // 60} min {maximum % 60} s."
+                )
+
             raise ErreurValidation(
                 f"{self._nom} doit être entre "
                 f"{self.__minimum} et {self.__maximum}."
-            )
+        )
 
 class VariableCategorielle(Variable):
     """Variable dont la valeur doit appartenir à une liste autorisée."""
