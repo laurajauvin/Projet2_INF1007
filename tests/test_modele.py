@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 from src.donnees import charger_donnees
 from src.entrainement import (calculer_importances, calculer_mae, calculer_mae_numpy, calculer_reference, creer_metadonnees, creer_modele, entrainer_modele, predire, sauvegarder_resultats)
-from src.validation import valider_entrees, ErreurValidation
+from src.exceptions import valider_entrees, ErreurValidation
 
 #Colonnes que le modèle utilise comme entrée
 COLONNES_ENTREE = [

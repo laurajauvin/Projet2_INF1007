@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import json
 import os
 from .entrainement import predire_popularite
-from .validation import valider_entrees, ErreurValidation
+from .exceptions import valider_entrees, ErreurValidation
 
 
 def afficher_interface() -> None:
