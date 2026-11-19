@@ -137,7 +137,7 @@ x = df[["danceability", "energy", "tempo", "loudness",
 y = df["popularity"]
 
 #Séparer les données de test et d'entraînement
-#Environ 80% des lignes vont à l'entraînemnt et 20% au test; random = 42 permet d'obtenir la même séparation à chaque fois qu'on relance le code
+#Environ 80% des lignes vont à l'entraînement et 20% au test; random = 42 permet d'obtenir la même séparation à chaque fois qu'on relance le code
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, random_state = 42)
 
 #Volet 2.4: Établir une référence
