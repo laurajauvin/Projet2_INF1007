@@ -11,7 +11,7 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.ensemble import RandomForestRegressor
-from src.donnees import charger_donnees
+from donnees import charger_donnees
 
 
 #Volet 2.4: Établir une référence
@@ -195,7 +195,8 @@ if __name__ == "__main__":
     metadonnees = creer_metadonnees(x_train,mae_modele,mae_reference,importances)
 
     #Chemins et sauvegarde des fichiers
-    dossier_projet = os.path.dirname(os.path.abspath(__file__))
+    dossier_src = os.path.dirname(os.path.abspath(__file__))
+    dossier_projet = os.path.dirname(dossier_src)
     chemin_modele = os.path.join(dossier_projet, "modeles", "modele_popularite.joblib")
     chemin_metadonnees = os.path.join(dossier_projet, "modeles", "metadonnees.json")
 

@@ -1,6 +1,7 @@
 import json
 import math
 from pathlib import Path
+import os
 
 
 class ErreurValidation(Exception):
@@ -9,7 +10,14 @@ class ErreurValidation(Exception):
 
 
 # Charger les métadonnées
-chemin_json = Path(__file__).parent / "modeles" / "metadonnees.json"
+dossier_src = os.path.dirname(os.path.abspath(__file__))
+dossier_projet = os.path.dirname(dossier_src)
+
+chemin_json = os.path.join(
+    dossier_projet,
+    "modeles",
+    "metadonnees.json"
+)
 
 with open(chemin_json, "r", encoding="utf-8") as fichier:
     metadonnees = json.load(fichier)

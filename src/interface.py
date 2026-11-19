@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import json
 import os
 from entrainement import predire
-from tests.validation import valider_entrees, ErreurValidation
-from modeles import predictions
+from validation import valider_entrees, ErreurValidation
+
 
 def afficher_interface() -> None:
     """Construit et affiche l'interface de streamlit"""
@@ -19,7 +19,8 @@ def afficher_interface() -> None:
     )
 
     # Construire les chemins des fichiers
-    dossier_projet = os.path.dirname(os.path.abspath(__file__))
+    dossier_src = os.path.dirname(os.path.abspath(__file__))
+    dossier_projet = os.path.dirname(dossier_src)
 
     chemin_metadonnees = os.path.join(
         dossier_projet, "modeles", "metadonnees.json"
@@ -501,7 +502,7 @@ def afficher_interface() -> None:
         )
 
         # Créer le graphique
-        fig, ax = plt.subplots(figsize=(7, 5.5))
+        fig, ax = plt.subplots(figsize=(7, 6.25))
 
         ax.barh(
             df_importances["Caractéristique"],
@@ -541,7 +542,7 @@ def afficher_interface() -> None:
         
     #Historique des predictions
 
-        st.markdown("<div style='padding-top: 40px;'></div>",
+        st.markdown("<div style='padding-top: 60px;'></div>",
             unsafe_allow_html=True)
 
         st.subheader("Historique des prédictions")

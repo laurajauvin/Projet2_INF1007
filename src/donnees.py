@@ -1,8 +1,12 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+from exceptions import DonneeInvalideError, GenreInconnuError
 
-dossier_projet = os.path.dirname(os.path.abspath(__file__))
+dossier_src = os.path.dirname(os.path.abspath(__file__))
+dossier_projet = os.path.dirname(dossier_src)
+
+dossier_donnees = os.path.join(dossier_projet, "donnees")
 
 
 def charger_donnees(nom_fichier: str) -> pd.DataFrame:
@@ -10,7 +14,7 @@ def charger_donnees(nom_fichier: str) -> pd.DataFrame:
     Reçoit le chemin du fichier et renvoie son contenu en DataFrame.
     Lève FileNotFoundError si le fichier n'existe pas.
     """
-    chemin = os.path.join(dossier_projet, nom_fichier)
+    chemin = os.path.join(dossier_donnees, nom_fichier)
     if not os.path.isfile(chemin):
         raise FileNotFoundError(f"Fichier introuvable : {chemin}")
 
@@ -147,7 +151,6 @@ if __name__ == "__main__": #empêche l'exécution du sample et nettoyage de donn
 
 
 #Tests
-from src.exceptions import DonneeInvalideError, GenreInconnuError
 
 
 def verifier_dansabilite(valeur: float) -> None:
