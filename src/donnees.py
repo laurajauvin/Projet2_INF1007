@@ -150,16 +150,3 @@ if __name__ == "__main__": #empêche l'exécution du sample et nettoyage de donn
     plt.show()
 
 
-#Tests
-
-
-def verifier_dansabilite(valeur: float) -> None:
-    """Vérifie la dansabilité; lève DonneeInvalideError si elle n'est pas entre 0 et 1."""
-    if not 0 <= valeur <= 1:
-        raise DonneeInvalideError("La dansabilité doit être entre 0 et 1.")
-
-
-def verifier_genre(genre: str, genres_possibles: list[str]) -> None:
-    """Vérifie le genre; lève GenreInconnuError s'il n'est pas autorisé."""
-    if genre not in genres_possibles:
-        raise GenreInconnuError(f"Genre inconnu : {genre}")
