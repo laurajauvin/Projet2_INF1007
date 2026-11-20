@@ -64,6 +64,29 @@ if __name__ == "__main__": #empêche l'exécution du sample et nettoyage de donn
     # 4. Vérifier les valeurs suspectes
     print("\n--- Vérification des valeurs suspectes ---")
 
+    print("\n--- Distribution des durées ---")
+    print(df["duration_ms"].describe(
+        percentiles=[0.95, 0.99]
+    ))
+    print("Chansons de plus de 10 minutes :",
+      (df["duration_ms"] > 600000).sum())
+
+    print("Chansons de plus de 20 minutes :",
+        (df["duration_ms"] > 1200000).sum())
+
+    print("Chansons de plus de 30 minutes :",
+        (df["duration_ms"] > 1800000).sum())
+
+    print("\nLes 10 durées les plus longues :")
+    print(
+        (df["duration_ms"].nlargest(10) / 60000).round(2)
+    )
+
+    print("\n--- Distribution du volume ---")
+    print(df["loudness"].describe(
+        percentiles=[0.01, 0.05, 0.95, 0.99]
+    ))
+
     print("Durées égales à 0 :",
         (df["duration_ms"] == 0).sum())
 
