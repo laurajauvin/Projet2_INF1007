@@ -54,7 +54,8 @@ def valider_entrees(
     genre: str,
     minutes: int,
     secondes: int,
-    valeurs: dict[str, object]
+    valeurs: dict[str, object], #on permet à valeurs de recevoir n'importe quel type de valeur pour que la validateur puisse vérifier et refuser les valeurs invalides
+    validateur: ValidateurVariables
 ) -> None:
     """Vérifie la validité des entrées de l'utilisateur."""
 
@@ -76,8 +77,7 @@ def valider_entrees(
 
     # Regrouper toutes les valeurs à valider
     valeurs_completes = valeurs.copy()
-    valeurs_completes["genre"] = genre
+    valeurs_completes["track_genre"] = genre
 
     # Valider les caractéristiques numériques et le genre
-    validateur = creer_validateur()
     validateur.valider_tout(valeurs_completes)

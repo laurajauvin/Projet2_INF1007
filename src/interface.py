@@ -9,6 +9,7 @@ import os
 from .entrainement import predire_popularite
 from .exceptions import ErreurValidation
 from .validation import valider_entrees
+from .variables import (VariableCategorielle,VariableNumerique,ValidateurVariables)
 
 
 
@@ -59,6 +60,15 @@ def afficher_interface() -> None:
             "Le fichier des métadonnées est invalide ou impossible à lire."
         )
         st.stop()
+
+    variables_a_valider = [VariableCategorielle("track_genre",metadonnees["genres_possibles"])]
+
+    for nom, bornes in metadonnees["intervalles_numeriques"].items():
+        variables_a_valider.append(
+            VariableNumerique(nom, bornes["min"], bornes["max"]))
+
+    validateur = ValidateurVariables(variables_a_valider)
+        
 
 
 
@@ -402,7 +412,7 @@ def afficher_interface() -> None:
             }
 
             try:
-                valider_entrees(chanson, artiste, genre, minutes, secondes, valeurs)
+                valider_entrees(chanson, artiste, genre, minutes, secondes, valeurs, validateur)
 
             except ErreurValidation as erreur:
                 st.error(str(erreur))
