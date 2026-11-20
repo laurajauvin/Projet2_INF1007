@@ -3,14 +3,25 @@ import joblib
 import numpy as np
 import pandas as pd
 import pytest
+
 from src.donnees import charger_donnees
-from src.entrainement import (calculer_importances, calculer_mae, calculer_mae_numpy, calculer_reference, creer_metadonnees, creer_modele, entrainer_modele, predire, sauvegarder_resultats)
+from src.entrainement import (
+    calculer_importances,
+    calculer_mae,
+    calculer_mae_numpy,
+    calculer_reference,
+    creer_metadonnees,
+    creer_modele,
+    entrainer_modele,
+    predire,
+    sauvegarder_resultats,
+)
 from src.exceptions import ErreurValidation
 from src.validation import creer_validateur, valider_entrees
+from src.variables import VariableNumerique
 
 
-
-#Colonnes que le modèle utilise comme entrée
+# Colonnes que le modèle utilise comme entrée
 COLONNES_ENTREE = [
     "danceability",
     "energy",
@@ -21,27 +32,33 @@ COLONNES_ENTREE = [
 ]
 
 
-#Fixture: charge le dataset nettoyé et en choisit un petit échantillon pour éviter que les tests ne prennent trop de temps
-@pytest.fixture(scope = "module") #Avec scope="module", les 60 lignes sont préparées une fois, puis réutilisées pour les autres tests de test_modele.py (évite de tout recréer l'échantillon à chaque fois)
+# Fixture : charge le dataset nettoyé et choisit un échantillon de 60 lignes
+@pytest.fixture(scope="module")
 def df_test() -> pd.DataFrame:
     """Charge le CSV réel et en prend 60 lignes pour les tests."""
     df = charger_donnees("dataset_30000_clean.csv")
     return df.sample(n=60, random_state=42)
 
 
+# Fixture : entraîne le modèle une seule fois pour les tests
 @pytest.fixture(scope="module")
 def modele_entraine(df_test: pd.DataFrame):
-    """Entraîne le pipeline sur l'échantillon réel utilisé dans ces tests."""
+    """Entraîne le modèle sur l'échantillon utilisé dans les tests."""
     return entrainer_modele(
         creer_modele(),
         df_test[COLONNES_ENTREE],
         df_test["popularity"],
     )
 
+
+# Fixture : crée le validateur une seule fois pour les tests
 @pytest.fixture(scope="module")
 def validateur():
-    """Crée le validateur une fois pour les tests de ce fichier."""
+    """Crée le validateur pour les tests de validation."""
     return creer_validateur()
+
+
+# ------ Tests de calcul de la MAE ------
 
 def test_reference_calcule_mae() -> None:
     """Vérifie la MAE de référence sur un exemple calculable à la main."""
@@ -52,9 +69,9 @@ def test_reference_calcule_mae() -> None:
 
     assert resultat == pytest.approx(10.0)
 
+
 def test_mae_numpy_identique_a_sklearn() -> None:
     """Vérifie que le calcul NumPy donne le même résultat que scikit-learn."""
-
     y_test = pd.Series([10, 20, 30, 40])
     y_prediction = np.array([12, 18, 25, 45])
 
@@ -62,6 +79,7 @@ def test_mae_numpy_identique_a_sklearn() -> None:
     resultat_sklearn = calculer_mae(y_test, y_prediction)
 
     assert resultat_numpy == pytest.approx(resultat_sklearn)
+
 
 def test_reference_refuse_train_vide() -> None:
     """Vérifie qu'une erreur est levée si y_train est vide."""
@@ -98,6 +116,8 @@ def test_mae_refuse_des_tailles_differentes() -> None:
         )
 
 
+# ------ Tests du modèle ------
+
 def test_modele_contient_preprocesseur_et_foret() -> None:
     """Vérifie que le pipeline contient les deux étapes attendues."""
     modele = creer_modele()
@@ -110,7 +130,7 @@ def test_modele_entraine_produit_une_prediction_par_chanson(
     df_test: pd.DataFrame,
     modele_entraine,
 ) -> None:
-    """Vérifie que le modèle entraîné prédit chaque ligne du vrai échantillon."""
+    """Vérifie que le modèle prédit chaque ligne de l'échantillon."""
     predictions = predire(modele_entraine, df_test[COLONNES_ENTREE])
 
     assert len(predictions) == len(df_test)
@@ -119,9 +139,9 @@ def test_modele_entraine_produit_une_prediction_par_chanson(
     assert np.all(np.isfinite(predictions))
 
 
-def test_importances_sont_regroupees(
-    modele_entraine,
-) -> None:
+# ------ Tests des importances ------
+
+def test_importances_sont_regroupees(modele_entraine) -> None:
     """Vérifie les noms des caractéristiques et la somme des importances."""
     importances = calculer_importances(modele_entraine)
 
@@ -129,12 +149,16 @@ def test_importances_sont_regroupees(
     assert sum(importances.values()) == pytest.approx(1.0)
     assert len(importances) == 6
 
+
+# ------ Tests des métadonnées ------
+
 def test_metadonnees_contiennent_genres_et_intervalles(
     df_test: pd.DataFrame,
     modele_entraine,
 ) -> None:
     """Vérifie que les métadonnées reprennent le vrai échantillon."""
     importances = calculer_importances(modele_entraine)
+
     metadonnees = creer_metadonnees(
         df_test[COLONNES_ENTREE],
         mae_modele=12.0,
@@ -145,12 +169,15 @@ def test_metadonnees_contiennent_genres_et_intervalles(
     assert set(metadonnees["genres_possibles"]) == set(
         df_test["track_genre"].unique()
     )
+
     assert metadonnees["intervalles_numeriques"]["energy"]["min"] == 0.0
     assert metadonnees["intervalles_numeriques"]["energy"]["max"] == 1.0
 
     assert metadonnees["intervalles_numeriques"]["danceability"]["min"] == 0.0
     assert metadonnees["intervalles_numeriques"]["danceability"]["max"] == 1.0
 
+
+# ------ Tests de sauvegarde ------
 
 def test_sauvegarde_modele_et_metadonnees(
     tmp_path,
@@ -174,8 +201,7 @@ def test_sauvegarde_modele_et_metadonnees(
         assert json.load(fichier) == metadonnees
 
 
-
-# ------ Tests de validation sur les entrées de l'utilisateur ------
+# ------ Tests de validation des entrées utilisateur ------
 
 # Données valides pour les tests
 valeurs_valides = {
@@ -183,7 +209,7 @@ valeurs_valides = {
     "energy": 0.8,
     "tempo": 120.0,
     "loudness": -10.0,
-    "duration_ms": 180000
+    "duration_ms": 180000,
 }
 
 minutes_valides = 3
@@ -191,17 +217,20 @@ secondes_valides = 0
 
 
 def test_entrees_valides(validateur):
+    """Vérifie que des entrées valides sont acceptées."""
     valider_entrees(
         "Ma chanson",
         "Mon artiste",
         "pop",
         minutes_valides,
         secondes_valides,
-        valeurs_valides, validateur
+        valeurs_valides,
+        validateur,
     )
 
 
 def test_titre_vide(validateur):
+    """Vérifie qu'un titre vide est refusé."""
     with pytest.raises(ErreurValidation):
         valider_entrees(
             "",
@@ -210,11 +239,12 @@ def test_titre_vide(validateur):
             minutes_valides,
             secondes_valides,
             valeurs_valides,
-            validateur
+            validateur,
         )
 
 
 def test_artiste_vide(validateur):
+    """Vérifie qu'un artiste vide est refusé."""
     with pytest.raises(ErreurValidation):
         valider_entrees(
             "Ma chanson",
@@ -223,11 +253,12 @@ def test_artiste_vide(validateur):
             minutes_valides,
             secondes_valides,
             valeurs_valides,
-            validateur
+            validateur,
         )
 
 
 def test_genre_invalide(validateur):
+    """Vérifie qu'un genre inexistant est refusé."""
     with pytest.raises(ErreurValidation):
         valider_entrees(
             "Ma chanson",
@@ -236,11 +267,12 @@ def test_genre_invalide(validateur):
             minutes_valides,
             secondes_valides,
             valeurs_valides,
-            validateur
+            validateur,
         )
 
 
 def test_dansabilite_invalide(validateur):
+    """Vérifie qu'une dansabilité supérieure à 1 est refusée."""
     valeurs = valeurs_valides.copy()
     valeurs["danceability"] = 1.5
 
@@ -252,11 +284,12 @@ def test_dansabilite_invalide(validateur):
             minutes_valides,
             secondes_valides,
             valeurs,
-            validateur
+            validateur,
         )
 
 
 def test_energie_invalide(validateur):
+    """Vérifie qu'une énergie inférieure à 0 est refusée."""
     valeurs = valeurs_valides.copy()
     valeurs["energy"] = -0.5
 
@@ -268,11 +301,12 @@ def test_energie_invalide(validateur):
             minutes_valides,
             secondes_valides,
             valeurs,
-            validateur
+            validateur,
         )
 
 
 def test_tempo_invalide(validateur):
+    """Vérifie qu'un tempo hors limites est refusé."""
     valeurs = valeurs_valides.copy()
     valeurs["tempo"] = 300.0
 
@@ -284,11 +318,12 @@ def test_tempo_invalide(validateur):
             minutes_valides,
             secondes_valides,
             valeurs,
-            validateur
+            validateur,
         )
 
 
 def test_volume_invalide(validateur):
+    """Vérifie qu'un volume hors limites est refusé."""
     valeurs = valeurs_valides.copy()
     valeurs["loudness"] = 5.0
 
@@ -300,11 +335,12 @@ def test_volume_invalide(validateur):
             minutes_valides,
             secondes_valides,
             valeurs,
-            validateur
+            validateur,
         )
 
 
 def test_duree_invalide(validateur):
+    """Vérifie qu'une durée hors limites est refusée."""
     valeurs = valeurs_valides.copy()
     valeurs["duration_ms"] = 10000000
 
@@ -316,11 +352,12 @@ def test_duree_invalide(validateur):
             minutes_valides,
             secondes_valides,
             valeurs,
-            validateur
+            validateur,
         )
 
 
 def test_valeur_non_numerique(validateur):
+    """Vérifie qu'une valeur non numérique est refusée."""
     valeurs = valeurs_valides.copy()
     valeurs["tempo"] = "rapide"
 
@@ -332,11 +369,12 @@ def test_valeur_non_numerique(validateur):
             minutes_valides,
             secondes_valides,
             valeurs,
-            validateur
+            validateur,
         )
 
 
 def test_minutes_negatives(validateur):
+    """Vérifie que les minutes négatives sont refusées."""
     with pytest.raises(ErreurValidation):
         valider_entrees(
             "Ma chanson",
@@ -345,11 +383,12 @@ def test_minutes_negatives(validateur):
             -1,
             0,
             valeurs_valides,
-            validateur
+            validateur,
         )
 
 
 def test_secondes_invalides(validateur):
+    """Vérifie que 60 secondes sont refusées."""
     with pytest.raises(ErreurValidation):
         valider_entrees(
             "Ma chanson",
@@ -358,5 +397,37 @@ def test_secondes_invalides(validateur):
             3,
             60,
             valeurs_valides,
-            validateur
+            validateur,
         )
+
+
+# ------ Tests directs de VariableNumerique ------
+
+def test_borne_minimale_acceptee():
+    """Vérifie que la borne minimale est acceptée."""
+    variable = VariableNumerique("danceability", 0, 1)
+    variable.valider(0)
+
+
+def test_borne_maximale_acceptee():
+    """Vérifie que la borne maximale est acceptée."""
+    variable = VariableNumerique("danceability", 0, 1)
+    variable.valider(1)
+
+
+@pytest.mark.parametrize("valeur", [-0.1, 1.1])
+def test_dansabilite_hors_limites(valeur):
+    """Vérifie que les valeurs hors limites sont refusées."""
+    variable = VariableNumerique("danceability", 0, 1)
+
+    with pytest.raises(ErreurValidation):
+        variable.valider(valeur)
+
+
+@pytest.mark.parametrize("valeur", [-0.1, 1.1])
+def test_energie_hors_limites(valeur):
+    """Vérifie que les valeurs hors limites sont refusées."""
+    variable = VariableNumerique("energy", 0, 1)
+
+    with pytest.raises(ErreurValidation):
+        variable.valider(valeur)
