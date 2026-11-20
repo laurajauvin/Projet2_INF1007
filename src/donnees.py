@@ -164,4 +164,3 @@ if __name__ == "__main__":
     # Afficher le graphique
     plt.show()
 
-

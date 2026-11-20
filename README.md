@@ -47,6 +47,21 @@ Notre variable cible est la popularité d'une chanson (popularity). Comme nous c
 
 Après avoir nettoyé notre dataset, nous avons séparé les 29 947 chansons en deux ensembles : 80 % pour l'entraînement et 20 % pour les tests. Les données d'entraînement permettent au modèle d'apprendre les relations entre les caractéristiques musicales et la popularité des chansons. Les données de test servent ensuite à évaluer sa capacité à prédire la popularité de chansons qu'il n'a pas utilisées pendant son apprentissage. Nous avons utilisé random_state=42 afin de rendre notre séparation reproductible.
 
-----Entraînement et évaluation----
+---- Entraînement et évaluation ----
 
 Sur l’ensemble de test, la forêt aléatoire obtient une MAE de 12,98, contre 19,01 pour la référence basée sur la moyenne. Elle réduit donc l’erreur moyenne d’environ 6 points de popularité et fait mieux que cette référence. Le graphique prédit contre réel montre que le modèle suit partiellement la tendance, mais que les prédictions restent dispersées autour de la diagonale. Elles sont concentrées surtout entre 10 et 60 : le modèle surestime souvent les chansons dont la popularité réelle est très basse et sous-estime les plus populaires. La MAE indique une erreur absolue moyenne d’environ 13 points. Les différentes caractéristiques audio et le genre aident le modèle dans sa prédiction, puisqu’il fait mieux que la référence, mais elles ne suffisent pas à prédire précisément la popularité de chaque chanson. 
+
+---- Utilisation des décorateurs ----
+
+Plusieurs décorateurs sont utilisés dans le projet :
+
+- `@abstractmethod` définit la méthode `valider()` comme abstraite dans la classe parente `Variable`. Les classes enfants doivent donc implémenter leur propre validation.
+- `@property` permet d'accéder au nom d'une variable avec `variable.nom`, tout en conservant une méthode qui contrôle cet accès.
+- `@pytest.fixture` permet de préparer des données et des objets réutilisables dans plusieurs tests, évitant de répéter leur création.
+- `@chronometrer` est un décorateur personnalisé qui mesure et affiche le temps d'exécution de la fonction `entrainer_modele()`, ce qui permet de connaître la durée nécessaire à l'entraînement du modèle.
+
+---- Couverture des tests ----
+
+Les tests sont exécutés avec `pytest` et la couverture du code est mesurée avec `pytest-cov`.
+
+La dernière exécution a donné 29 tests réussis sur 29 et une couverture globale de 40 %.

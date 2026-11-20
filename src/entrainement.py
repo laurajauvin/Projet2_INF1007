@@ -12,6 +12,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.ensemble import RandomForestRegressor
 from .donnees import charger_donnees
+import time
+from functools import wraps
 
 
 #Volet 2.4: Établir une référence
@@ -40,7 +42,9 @@ def calculer_reference(y_train : pd.Series,y_test : pd.Series) -> float:
 
 #Volet 2.5: Entraîner et évaluer
 def creer_modele() -> Pipeline:
-    """Construit le pipeline d'encodage de prédiction de la popularité."""
+    """Construit le pipeline d'encodage de prédiction de la popularité.
+    Returns:
+        Pipeline: Pipeline contenant l'encodage du genre et la forêt aléatoire."""
 
     #Transformation de track_genre en valeurs numériques; garde les autres colonnes numériques (remainder = "passthrough")
     transformation = ColumnTransformer( transformers=[("genre", OneHotEncoder(handle_unknown="ignore"), ["track_genre"],)], remainder="passthrough")
@@ -48,9 +52,19 @@ def creer_modele() -> Pipeline:
     #Relier la transformation au modèle de forêt aléatoire
     return make_pipeline(transformation, RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1))
 
+def chronometrer(fonction):
+    """Mesure et affiche le temps d'exécution d'une fonction."""
+    @wraps(fonction)
+    def wrapper(*args, **kwargs):
+        debut = time.perf_counter()
+        resultat = fonction(*args, **kwargs)
+        duree = time.perf_counter() - debut
+        print(f"Temps d'entraînement : {duree:.2f} secondes")
+        return resultat
 
+    return wrapper
 
-
+@chronometrer
 def entrainer_modele(modele: Pipeline,x_train: pd.DataFrame,y_train: pd.Series) -> Pipeline:
     """Entraîne le modèle sur les données d'entraînement et le renvoie."""
     modele.fit(x_train, y_train)
@@ -187,7 +201,19 @@ def sauvegarder_resultats(modele: Pipeline,metadonnees: dict[str, object],chemin
     with open(chemin_json, "w", encoding="utf-8") as fichier:
         json.dump(metadonnees, fichier, ensure_ascii=False, indent=4)
 
+# Prediction de popularite
+def predire_popularite(
+    modele: Pipeline,
+    donnees: pd.DataFrame
+) -> float:
+    """Prédit la popularité d'une chanson.
 
+    Reçoit un modèle entraîné et les caractéristiques d'une chanson.
+    Renvoie la popularité prédite.
+    """
+    prediction = modele.predict(donnees)[0]
+
+    return float(prediction)
 
 
 if __name__ == "__main__":
@@ -229,19 +255,3 @@ if __name__ == "__main__":
     chemin_metadonnees = os.path.join(dossier_projet, "modeles", "metadonnees.json")
 
     sauvegarder_resultats(modele,metadonnees,chemin_modele,chemin_metadonnees)
-
-# Prediction de popularite
-def predire_popularite(modele, donnees):
-    """
-    Prédit la popularité d'une chanson.
-
-    Args:
-        modele: Modèle de prédiction entraîné.
-        donnees: Caractéristiques de la chanson à prédire.
-
-    Returns:
-        La popularité prédite.
-    """
-    prediction = modele.predict(donnees)[0]
-
-    return prediction

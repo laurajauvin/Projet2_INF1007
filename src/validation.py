@@ -20,6 +20,11 @@ def creer_validateur():
         "modeles",
         "metadonnees.json"
     )
+    
+    if not os.path.isfile(chemin_json):
+        raise ErreurValidation(
+        "Le fichier des métadonnées est introuvable."
+        )
 
     try:
         with open(chemin_json, "r", encoding="utf-8") as fichier:
