@@ -11,6 +11,7 @@ from .exceptions import ErreurValidation
 from .validation import valider_entrees
 
 
+
 def afficher_interface() -> None:
     """Construit et affiche l'interface de streamlit"""
 
@@ -58,6 +59,8 @@ def afficher_interface() -> None:
             "Le fichier des métadonnées est invalide ou impossible à lire."
         )
         st.stop()
+
+
 
     # Attitrer chaque contrainte à une variable
     intervalles = metadonnees["intervalles_numeriques"]
