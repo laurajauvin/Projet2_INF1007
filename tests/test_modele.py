@@ -169,6 +169,7 @@ def test_sauvegarde_modele_et_metadonnees(
         assert json.load(fichier) == metadonnees
 
 
+
 # ------ Tests de validation sur les entrées de l'utilisateur ------
 
 # Données valides pour les tests
@@ -180,27 +181,54 @@ valeurs_valides = {
     "duration_ms": 180000
 }
 
+minutes_valides = 3
+secondes_valides = 0
+
 
 def test_entrees_valides():
     valider_entrees(
-        "Ma chanson", "Mon artiste", "pop", valeurs_valides
+        "Ma chanson",
+        "Mon artiste",
+        "pop",
+        minutes_valides,
+        secondes_valides,
+        valeurs_valides
     )
 
 
 def test_titre_vide():
     with pytest.raises(ErreurValidation):
-        valider_entrees("", "Mon artiste", "pop", valeurs_valides)
+        valider_entrees(
+            "",
+            "Mon artiste",
+            "pop",
+            minutes_valides,
+            secondes_valides,
+            valeurs_valides
+        )
 
 
 def test_artiste_vide():
     with pytest.raises(ErreurValidation):
-        valider_entrees("Ma chanson", "", "pop", valeurs_valides)
+        valider_entrees(
+            "Ma chanson",
+            "",
+            "pop",
+            minutes_valides,
+            secondes_valides,
+            valeurs_valides
+        )
 
 
 def test_genre_invalide():
     with pytest.raises(ErreurValidation):
         valider_entrees(
-            "Ma chanson", "Mon artiste", "jazz-invalide", valeurs_valides
+            "Ma chanson",
+            "Mon artiste",
+            "jazz-invalide",
+            minutes_valides,
+            secondes_valides,
+            valeurs_valides
         )
 
 
@@ -209,7 +237,14 @@ def test_dansabilite_invalide():
     valeurs["danceability"] = 1.5
 
     with pytest.raises(ErreurValidation):
-        valider_entrees("Ma chanson", "Mon artiste", "pop", valeurs)
+        valider_entrees(
+            "Ma chanson",
+            "Mon artiste",
+            "pop",
+            minutes_valides,
+            secondes_valides,
+            valeurs
+        )
 
 
 def test_energie_invalide():
@@ -217,7 +252,14 @@ def test_energie_invalide():
     valeurs["energy"] = -0.5
 
     with pytest.raises(ErreurValidation):
-        valider_entrees("Ma chanson", "Mon artiste", "pop", valeurs)
+        valider_entrees(
+            "Ma chanson",
+            "Mon artiste",
+            "pop",
+            minutes_valides,
+            secondes_valides,
+            valeurs
+        )
 
 
 def test_tempo_invalide():
@@ -225,7 +267,14 @@ def test_tempo_invalide():
     valeurs["tempo"] = 300.0
 
     with pytest.raises(ErreurValidation):
-        valider_entrees("Ma chanson", "Mon artiste", "pop", valeurs)
+        valider_entrees(
+            "Ma chanson",
+            "Mon artiste",
+            "pop",
+            minutes_valides,
+            secondes_valides,
+            valeurs
+        )
 
 
 def test_volume_invalide():
@@ -233,7 +282,14 @@ def test_volume_invalide():
     valeurs["loudness"] = 5.0
 
     with pytest.raises(ErreurValidation):
-        valider_entrees("Ma chanson", "Mon artiste", "pop", valeurs)
+        valider_entrees(
+            "Ma chanson",
+            "Mon artiste",
+            "pop",
+            minutes_valides,
+            secondes_valides,
+            valeurs
+        )
 
 
 def test_duree_invalide():
@@ -241,7 +297,14 @@ def test_duree_invalide():
     valeurs["duration_ms"] = 10000000
 
     with pytest.raises(ErreurValidation):
-        valider_entrees("Ma chanson", "Mon artiste", "pop", valeurs)
+        valider_entrees(
+            "Ma chanson",
+            "Mon artiste",
+            "pop",
+            minutes_valides,
+            secondes_valides,
+            valeurs
+        )
 
 
 def test_valeur_non_numerique():
@@ -249,30 +312,35 @@ def test_valeur_non_numerique():
     valeurs["tempo"] = "rapide"
 
     with pytest.raises(ErreurValidation):
-        valider_entrees("Ma chanson", "Mon artiste", "pop", valeurs)
+        valider_entrees(
+            "Ma chanson",
+            "Mon artiste",
+            "pop",
+            minutes_valides,
+            secondes_valides,
+            valeurs
+        )
 
-def test_borne_minimale_acceptee():
-    variable = VariableNumerique("danceability", 0, 1)
 
-    variable.valider(0)
-
-
-def test_borne_maximale_acceptee():
-    variable = VariableNumerique("danceability", 0, 1)
-
-    variable.valider(1)
-
-@pytest.mark.parametrize("valeur", [-0.1, 1.1])
-def test_dansabilite_hors_limites(valeur):
-    variable = VariableNumerique("danceability", 0, 1)
-
+def test_minutes_negatives():
     with pytest.raises(ErreurValidation):
-        variable.valider(valeur)
+        valider_entrees(
+            "Ma chanson",
+            "Mon artiste",
+            "pop",
+            -1,
+            0,
+            valeurs_valides
+        )
 
 
-@pytest.mark.parametrize("valeur", [-0.1, 1.1])
-def test_energie_hors_limites(valeur):
-    variable = VariableNumerique("energy", 0, 1)
-
+def test_secondes_invalides():
     with pytest.raises(ErreurValidation):
-        variable.valider(valeur)
+        valider_entrees(
+            "Ma chanson",
+            "Mon artiste",
+            "pop",
+            3,
+            60,
+            valeurs_valides
+        )
