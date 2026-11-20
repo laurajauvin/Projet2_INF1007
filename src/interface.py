@@ -516,9 +516,9 @@ def afficher_interface() -> None:
         })
 
         df_importances = df_importances.sort_values(
-            by="Importance",
-            ascending=True
-        )
+        by="Importance",
+        key=lambda valeurs: valeurs,
+        ascending=True)
 
         # Créer le graphique
         fig, ax = plt.subplots(figsize=(7, 6.25))
