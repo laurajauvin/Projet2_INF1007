@@ -14,23 +14,27 @@ from .validation import valider_entrees
 from .variables import (VariableCategorielle,VariableNumerique,ValidateurVariables)
 
 
-
 def afficher_interface() -> None:
-    """Construit et affiche l'interface de streamlit"""
+    """Construit et affiche l'interface de streamlit
+       Ne retourne aucune valeur"""
 
-    # Configuration de la page
+
+    # ---- Configurer l'apparence de la page streamlit ----
+
     st.set_page_config(
         page_title="Prédiction de popularité musicale",
         page_icon="🎵",
-        layout="wide"
+        layout="wide"  # Mise en page large
     )
 
-    # Construire les chemins des fichiers
-    dossier_src = os.path.dirname(os.path.abspath(__file__))
-    dossier_projet = os.path.dirname(dossier_src)
+
+    # ---- Construire les chemins des fichiers ----
+    
+    dossier_src = os.path.dirname(os.path.abspath(__file__)) # Trouver le dossier src
+    dossier_projet = os.path.dirname(dossier_src) # Remonter au dossier principal du projet
 
     chemin_metadonnees = os.path.join(
-        dossier_projet, "modeles", "metadonnees.json"
+        dossier_projet, "modeles", "metadonnees.json" # Relie les fichiers entre eux
     )
 
     chemin_modele = os.path.join(
@@ -42,9 +46,10 @@ def afficher_interface() -> None:
     )
 
 
-    # Vérifier que les fichiers nécessaires existent
+    # ---- Vérifier que les fichiers nécessaires existent ----
+
     if not os.path.isfile(chemin_metadonnees):
-        st.error("Le fichier des métadonnées est introuvable.")
+        st.error("Le fichier des métadonnées est introuvable.") # Si manque un fichier -> erreur affichée et arrêt de l'application
         st.stop()
 
     if not os.path.isfile(chemin_modele):
@@ -52,9 +57,10 @@ def afficher_interface() -> None:
         st.stop()
 
 
-    # Charger les métadonnées
+    # ---- Charger les métadonnées ----
+
     try:
-        with open(chemin_metadonnees, "r", encoding="utf-8") as fichier:
+        with open(chemin_metadonnees, "r", encoding="utf-8") as fichier:  # Ouvre en lecture et ferme automatiquement
             metadonnees = json.load(fichier)
 
     except (json.JSONDecodeError, OSError, UnicodeDecodeError):
@@ -63,22 +69,23 @@ def afficher_interface() -> None:
         )
         st.stop()
 
+
+    # Utilise les métadonnées du fichier JSON pour construire automatiquement nos validateurs
     variables_a_valider = [VariableCategorielle("track_genre",metadonnees["genres_possibles"])]
-
-    for nom, bornes in metadonnees["intervalles_numeriques"].items():
+    for nom, bornes in metadonnees["intervalles_numeriques"].items(): # Récupére limites des intervalles des variables numériques
         variables_a_valider.append(
-            VariableNumerique(nom, bornes["min"], bornes["max"]))
+            VariableNumerique(nom, bornes["min"], bornes["max"]))  # Crée un validateur avec valeur min et max de chaque variable
 
+    # Regroupe tous les validateurs dans un seul objet (utilisés dans fonction valider_entrees)
     validateur = ValidateurVariables(variables_a_valider)
-        
 
 
+    # ---- Récupéree les intervalles numériques définis dans le JSON ----
 
-    # Attitrer chaque contrainte à une variable
     intervalles = metadonnees["intervalles_numeriques"]
 
     dansabilite_min = intervalles["danceability"]["min"]
-    dansabilite_max = intervalles["danceability"]["max"]
+    dansabilite_max = intervalles["danceability"]["max"] 
 
     energie_min = intervalles["energy"]["min"]
     energie_max = intervalles["energy"]["max"]
@@ -89,12 +96,16 @@ def afficher_interface() -> None:
     volume_min = intervalles["loudness"]["min"]
     volume_max = intervalles["loudness"]["max"]
 
+    # Conversion de la durée en millisecondes pour qu'elle soit en secondes
     duree_min = math.ceil(intervalles["duration_ms"]["min"] / 1000)
     duree_max = math.floor(intervalles["duration_ms"]["max"] / 1000)   
 
+    # Récupérer la liste des genres acceptés
     genres = metadonnees["genres_possibles"]
 
-    # Charger le modèle déjà entraîné
+
+    # ---- Charger le modèle Random Forest déjà entraîné et sauvegardé ----
+
     try:
         modele = joblib.load(chemin_modele)
 
@@ -115,26 +126,30 @@ def afficher_interface() -> None:
         )
         st.stop()
 
-    # Charger l'historique existant au démarrage
-    if "historique" not in st.session_state:
 
+    # ---- Initialiser l'historique dans la session Streamlit s'il n'existe pas ----
+
+    if "historique" not in st.session_state:
         st.session_state.historique = []
 
+        # Vérifier si un ancien fichier historique existe
         if os.path.isfile(chemin_historique):
 
             try:
                 historique_df = pd.read_csv(chemin_historique)
 
-                # Vérifier que les colonnes nécessaires existent
+                # Défini les colonnes indispensables pour l'historique
                 colonnes_requises = [
                     "chanson",
                     "artiste",
                     "prediction"
                 ]
 
+                # Vérifier que toutes les colonnes nécessaires sont présentes
                 if all(colonne in historique_df.columns
                     for colonne in colonnes_requises):
 
+                    # Convertir les données en liste de dictionnaires
                     st.session_state.historique = historique_df[
                         colonnes_requises
                     ].to_dict("records")
@@ -145,25 +160,28 @@ def afficher_interface() -> None:
                         "les colonnes attendues. Un nouvel historique sera utilisé."
                     )
 
+            # Gérer les erreurs possibles lors de la lecture du CSV
             except pd.errors.EmptyDataError:
                 st.warning(
                     "Le fichier historique.csv est vide. "
-                    "Un nouvel historique sera utilisé."
+                    "Un nouvel historique sera utilisé."  # Fichier Vide
                 )
 
             except pd.errors.ParserError:
                 st.warning(
                     "Le fichier historique.csv est mal formaté. "
-                    "Un nouvel historique sera utilisé."
+                    "Un nouvel historique sera utilisé."  # Mauvais format
                 )
 
             except UnicodeDecodeError:
                 st.warning(
                     "Le fichier historique.csv ne peut pas être lu "
-                    "à cause de son encodage."
+                    "à cause de son encodage."  # Problème d'encodage
                 )
 
-    # Marges générales de l'application
+
+    # ---- Marges générales de l'application ----
+
     st.markdown("""
     <style>
         [data-testid="stMainBlockContainer"] {
@@ -171,10 +189,14 @@ def afficher_interface() -> None:
             padding-right: 9rem !important;
         }
     </style>
-    """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True) # unsafe_allow_html=True -> Autorise l'interprétation du HTML
+                                 # Utilisation des langages html et CSS pour l'apparence de l'interface
+                                 # (espace, padding, couleurs, police d'écriture, etc)
+                                 # st.markdown() -> Affiche du texte formaté
+                                 # <style> -> Permet de modifier le style
 
 
-    #Taille du texte
+    # ---- Taille du texte ----
 
     st.markdown("""
         <style>
@@ -209,33 +231,37 @@ def afficher_interface() -> None:
         </style>
         """, unsafe_allow_html=True)
 
-    # Titre
+
+    # ---- Titre Affiché ----
+
     st.markdown(
         "<h1 style = 'text-align: center; padding-bottom: 50px;'>🎶 Prédiction de popularité musicale 🎶</h1>",
         unsafe_allow_html=True
     )
 
-    #st.markdown() -> Affiche du texte formaté
-    #<h1> -> Crée un grand titre HTML
-    #style =	-> Permet de modifier le style
     #text-align: center -> Centre le titre
-    #unsafe_allow_html=True -> Autorise l'interprétation du HTML
 
 
-    #Diviser l'interface en deux colonnes
+    # ---- Diviser l'interface en deux colonnes ----
 
-    col_caracteristique, col_importance = st.columns([1, 1])
+    col_caracteristique, col_importance = st.columns([1, 1]) # Chaque colonne occupe la moitié de l'écran
 
-    # Colonne gauche des caractéristiques
+
+    # ---- # COLONNE DE GAUCHE (Entrées des caractéristiques) ----
 
     with col_caracteristique:
         st.subheader("Caractéristiques musicales")
         st.markdown("<div style='padding-top: 10px;'></div>",
             unsafe_allow_html=True)
 
-        
+
+        # ---- Les caractéristiques séparées en deux sous-colonnes ----
+
         sous_col_gauche, sous_col_droite = st.columns([1, 1])
-        
+
+
+        # ---- Apparence des entrées et étiquettes modifiée en CSS ----
+
         st.markdown("""
             <style>
 
@@ -311,22 +337,30 @@ def afficher_interface() -> None:
             </style>
         """, unsafe_allow_html=True)
 
+
+        # ---- Sous-colonne gauche des caractéristiques ----
+
         with sous_col_gauche:
 
+
             # Chanson
-            chanson = st.text_input("Chanson")
+            chanson = st.text_input("Chanson")  # Entrer le nom de la chanson
+
 
             # Genre
-            genre = st.selectbox(
+            genre = st.selectbox(   # Sélectionner un genre de musique
                 "Genre",
                 genres,
                 index = None,
                 placeholder="Rechercher un genre..."
             )
 
-            with st.container(gap="xsmall"):
+
+            with st.container(gap="xsmall"):  # Réduit l'espace entre les entrées
+
+
                 # Dansabilité
-                dansabilite = st.number_input(
+                dansabilite = st.number_input(   # Nombre entre 0 et 1 selon si on peut danser ou non sur la chanson
                     "Dansabilité",
                     step = 0.01,
                     format = "%.2f"
@@ -334,18 +368,19 @@ def afficher_interface() -> None:
 
                 st.caption(
                     f"Dansabilité acceptée : {dansabilite_min:.2f} à {dansabilite_max:.2f}"
-                )
+                )  # Indique à l'utilisateur l'intervalle de valeurs acceptées
+
 
             # Durée
                 col_minutes, col_secondes = st.columns(2, gap="xxsmall")
 
-                with col_minutes:
+                with col_minutes:      # Entrée pour les minutes
                     minutes = st.number_input(
                         "Minutes",
                         step=1
                     )
 
-                with col_secondes:
+                with col_secondes:      # Entrée pour les secondes
                     secondes = st.number_input(
                         "Secondes",
                         step=1
@@ -360,15 +395,17 @@ def afficher_interface() -> None:
                 )
 
 
-        # Colonne droite des caractéristiques    
+        # ---- Sous-colonne droite des caractéristiques ----   
 
         with sous_col_droite:
+
 
             # Artiste
             artiste = st.text_input("Artiste")
 
 
             with st.container(gap="xsmall"):
+
 
                 # Tempo
                 tempo = st.number_input(
@@ -381,6 +418,7 @@ def afficher_interface() -> None:
                     f"Tempo accepté : {tempo_min:.2f} à {tempo_max:.2f}"
                 )
 
+
                 # Energie
                 energie = st.number_input(
                     "Énergie",
@@ -391,6 +429,7 @@ def afficher_interface() -> None:
                 st.caption(
                     f"Énergie acceptée : {energie_min:.2f} à {energie_max:.2f}"
                 )
+
 
                 # Volume
                 volume = st.number_input(
@@ -407,15 +446,15 @@ def afficher_interface() -> None:
                 )
 
 
-        #Prédictions
+        # ---- Prédictions ----
 
         st.markdown("<div style='padding-top: 15px;'></div>",
-            unsafe_allow_html=True)
+            unsafe_allow_html=True)   # Ajout d'espace
 
-        st.subheader("Prédiction")
+        st.subheader("Prédiction")  # Sous-titre
         
 
-        if st.button("Prédire la popularité"):
+        if st.button("Prédire la popularité"):      # Lorsque l'on appuie sur le bouton "Prédire la popularité"
             valeurs = {
                 "danceability": dansabilite,
                 "energy": energie,
@@ -424,12 +463,14 @@ def afficher_interface() -> None:
                 "duration_ms": duree
             }
 
+            # Vérifie si toutes les entrées sont valides
             try:
-                valider_entrees(chanson, artiste, genre, minutes, secondes, valeurs, validateur)
+                valider_entrees(chanson, artiste, genre, minutes, secondes, valeurs, validateur)   
 
             except ErreurValidation as erreur:
                 st.error(str(erreur))
 
+            # Si oui, on lance la prédiction
             else:
                 donnees = pd.DataFrame([{
                     "danceability": dansabilite,
@@ -440,7 +481,7 @@ def afficher_interface() -> None:
                     "track_genre": genre
                 }])
 
-                prediction = predire_popularite(modele, donnees)
+                prediction = predire_popularite(modele, donnees)  # Fonction de "entraînement" -> retourne la popularité prédite
 
                 # Créer une nouvelle entrée
                 nouveau_resultat = {
@@ -460,7 +501,8 @@ def afficher_interface() -> None:
                     index=False,
                     encoding="utf-8-sig"
                 )
-                    
+
+                # Affiche la popularité prédite
                 st.markdown(
                     f"""
                     <div style="
@@ -478,31 +520,35 @@ def afficher_interface() -> None:
                 )
 
 
-    # COLONNE DE DROITE (Importance des caractéristiques)
+    # ---- COLONNE DE DROITE (Importance des caractéristiques) ----
+
     with col_importance:
-        st.subheader("Importance des caractéristiques")
+        st.subheader("Importance des caractéristiques")  # Sous-titre
 
         st.markdown("<div style='padding-top: 20px;'></div>",
             unsafe_allow_html=True)
 
-        # Récupérer les importances regroupées par caractéristique
-        importances_caracteristiques = calculer_importances(modele)
+        # Récupérer les importances regroupées par caractéristique (fonction de "entrainement")
+        importances_caracteristiques = calculer_importances(modele) # Stockées dans un dictionnaire
 
-        # Créer un DataFrame et trier les importances
+        # Transforme le dictionnaire en DataFrame
         df_importances = pd.DataFrame({
-            "Caractéristique": importances_caracteristiques.keys(),
+            "Caractéristique": importances_caracteristiques.keys(), 
             "Importance": importances_caracteristiques.values()
         })
 
+        # Trier de la plus faible à la plus élevée
         df_importances = df_importances.sort_values(
         by="Importance",
         key=lambda valeurs: valeurs,
         ascending=True)
 
-        # Créer le graphique
+
+        # ---- Créer le graphique ----
+
         fig, ax = plt.subplots(figsize=(7, 6.25))
 
-        ax.barh(
+        ax.barh(  # Diagramme à barre
             df_importances["Caractéristique"],
             df_importances["Importance"],
             color= "#665388",
@@ -511,6 +557,7 @@ def afficher_interface() -> None:
 
         ax.legend()
 
+        # Parcours la liste d'importances pour les afficher sur le diagramme
         for i, valeur in enumerate(df_importances["Importance"]):
             ax.text(
                 valeur,
@@ -518,6 +565,7 @@ def afficher_interface() -> None:
                 f" {valeur:.3f}",
                 va="center")
 
+        # Titres (axes)
         ax.set_xlabel("Importance relative")
         ax.set_title("Importance des caractéristiques")
         ax.set_ylabel("Caractéristiques musicales")
@@ -526,40 +574,55 @@ def afficher_interface() -> None:
             labelsize=11
         )
 
+        # Ajouter une grille pour faciliter la lecture
         ax.grid(
             axis="x",
             linestyle="--",
             alpha=0.4
         )
 
+        # Ajuster les limites de l'axe horizontal
         ax.set_axisbelow(True)
         ax.set_xlim(0, max(df_importances["Importance"]) * 1.15)
 
+        # Ajuster les espacements
         fig.tight_layout()
 
+        # Afficher le graphique dans Streamlit
         st.pyplot(fig, use_container_width=True)
 
+        # Fermer la figure
         plt.close(fig)
+
         
-    #Historique des predictions
+    # ---- Historique des predictions ----
 
         st.markdown("<div style='padding-top: 58px;'></div>",
             unsafe_allow_html=True)
 
         st.subheader("Historique des prédictions")
 
-        col_chanson, col_score = st.columns([2, 1])
+        
+        # ---- L'historique en deux sous-colonnes ----
 
+        col_chanson, col_score = st.columns([2, 1])   # Colonne des chansons et artistes occupe plus d'espace
+
+        # Colonne des chansons
         with col_chanson:
             st.markdown("#### Chanson")
+
+        # Colonne des scores
         with col_score:
             st.markdown("#### Score")
 
+        # Parcourt toutes les prédictions enregistrées dans l'historique
         for resultat in st.session_state.historique:
+
+            # Pour chaque prédiction, créer deux colonnes et afficher la chanson, l'artiste et le score
             col_chanson, col_score = st.columns([2, 1])
 
             with col_chanson:
-                st.write(f'{resultat["chanson"]} - {resultat["artiste"]}')
+                st.write(f'{resultat["chanson"]} ~ {resultat["artiste"]}')
 
             with col_score:
                 st.write(f'{resultat["prediction"]}/100')
