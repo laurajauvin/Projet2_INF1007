@@ -526,8 +526,11 @@ def afficher_interface() -> None:
         ax.barh(
             df_importances["Caractéristique"],
             df_importances["Importance"],
-            color= "#665388"
+            color= "#665388",
+            label="Importance"
         )
+
+        ax.legend()
 
         for i, valeur in enumerate(df_importances["Importance"]):
             ax.text(

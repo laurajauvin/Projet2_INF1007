@@ -187,7 +187,19 @@ def sauvegarder_resultats(modele: Pipeline,metadonnees: dict[str, object],chemin
     with open(chemin_json, "w", encoding="utf-8") as fichier:
         json.dump(metadonnees, fichier, ensure_ascii=False, indent=4)
 
+# Prediction de popularite
+def predire_popularite(
+    modele: Pipeline,
+    donnees: pd.DataFrame
+) -> float:
+    """Prédit la popularité d'une chanson.
 
+    Reçoit un modèle entraîné et les caractéristiques d'une chanson.
+    Renvoie la popularité prédite.
+    """
+    prediction = modele.predict(donnees)[0]
+
+    return float(prediction)
 
 
 if __name__ == "__main__":
@@ -229,19 +241,3 @@ if __name__ == "__main__":
     chemin_metadonnees = os.path.join(dossier_projet, "modeles", "metadonnees.json")
 
     sauvegarder_resultats(modele,metadonnees,chemin_modele,chemin_metadonnees)
-
-# Prediction de popularite
-def predire_popularite(modele, donnees):
-    """
-    Prédit la popularité d'une chanson.
-
-    Args:
-        modele: Modèle de prédiction entraîné.
-        donnees: Caractéristiques de la chanson à prédire.
-
-    Returns:
-        La popularité prédite.
-    """
-    prediction = modele.predict(donnees)[0]
-
-    return prediction

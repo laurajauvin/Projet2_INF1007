@@ -99,4 +99,9 @@ class ValidateurVariables:
         Lève ErreurValidation si une valeur est invalide.
         """
         for variable in self._variables:
+            if variable.nom not in valeurs:
+                raise ErreurValidation(
+                    f"La valeur de {variable.nom} est manquante."
+                )
+
             variable.valider(valeurs[variable.nom])
