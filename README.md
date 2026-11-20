@@ -1,5 +1,44 @@
 # Projet2_INF1007
 
+
+### Comandes présentation ###
+
+cd "C:\Users\laura\OneDrive - polymtl\Uni\INF1007\Projet2_INF1007"
+streamlit run src\main.py
+python -m pytest
+python -m pytest --cov=src --cov-report=term-missing
+pip install -r requirements.txt
+python --version
+
+
+### Chansons à tester ###
+
+Blinding Lights — The Weeknd
+Danceability	0.51
+Energy	0.73
+Tempo	171
+Loudness	-6.0
+Duration	200 s
+Genre	pop
+
+SBad Romance — Lady Gaga
+Danceability	0.70
+Energy	0.85
+Tempo	119
+Loudness	-4.5
+Duration	295 s
+Genre	dance
+
+Billie Jean — Michael Jackson
+Danceability	0.92
+Energy	0.65
+Tempo	117
+Loudness	-5.5
+Duration	294 s
+Genre	disco
+
+###
+
 ---- Documentation officielle ----
 
 Pandas : Getting started tutorials — documentation utilisée pour le chargement et l'exploration des données.
