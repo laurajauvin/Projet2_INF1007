@@ -50,7 +50,7 @@ def valider_entrees(
     genre: str,
     minutes: int,
     secondes: int,
-    valeurs: dict[str, int | float]
+    valeurs: dict[str, object]
 ) -> None:
     """Vérifie la validité des entrées de l'utilisateur."""
 
