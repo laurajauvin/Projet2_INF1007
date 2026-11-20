@@ -1,6 +1,5 @@
 import json
 import os
-
 from .exceptions import ErreurValidation
 from .variables import (
     VariableNumerique,
@@ -12,31 +11,43 @@ from .variables import (
 def creer_validateur():
     """Charge les métadonnées et crée le validateur."""
 
+    # ---- Repérer le dossier du fichier actuel, puis remonter au dossier principal du projet ----
+
     dossier_src = os.path.dirname(os.path.abspath(__file__))
     dossier_projet = os.path.dirname(dossier_src)
 
+    # Créer chemin vers le fichier JSON
     chemin_json = os.path.join(
         dossier_projet,
         "modeles",
         "metadonnees.json"
     )
-    
+
+
+    # ---- Empêcher la création du validateur si le fichier JSON est absent ----
+
     if not os.path.isfile(chemin_json):
         raise ErreurValidation(
         "Le fichier des métadonnées est introuvable."
         )
 
     try:
-        with open(chemin_json, "r", encoding="utf-8") as fichier:
+        # Ouvrir le fichier en lecture et charger son contenu
+        with open(chemin_json, "r", encoding="utf-8") as fichier: 
             metadonnees = json.load(fichier)
 
-    except (json.JSONDecodeError, OSError, UnicodeDecodeError) as erreur:
-        raise ErreurValidation(
+    # ErreurValidation pour de gérer les erreurs plus facilement et donner un message plus clair à l'utilisateur
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError) as erreur: # Format incorrect, problème d'accès, mauvais encodage
+        raise ErreurValidation(    # ErreurValidation = exception personnalisée (fichier exceptions)
             "Le fichier des métadonnées est invalide ou impossible à lire."
-        ) from erreur
+        ) from erreur  # Conserve lien avec erreur originale pour pouvoir retrouver sa cause
+
+
+    # ---- Préparer une liste qui contiendra tous les validateurs individuels ----
 
     variables = []
 
+    # Parcourir les caractéristiques numériques et récupérer limites min et max avec JSON
     for nom, intervalle in metadonnees["intervalles_numeriques"].items():
         variables.append(
             VariableNumerique(
@@ -46,6 +57,7 @@ def creer_validateur():
             )
         )
 
+    # Ajout d'un validateur à la liste
     variables.append(
         VariableCategorielle(
             "track_genre",
@@ -53,8 +65,10 @@ def creer_validateur():
         )
     )
 
-    return ValidateurVariables(variables)
+    return ValidateurVariables(variables) # Fonction creer_validateur() retourne un objet regroupant tous les validateurs
 
+
+# ---- Sert à vérifier si les entrées de l'utilisateur sont valides ----
 
 def valider_entrees(
     chanson: str,
@@ -67,28 +81,29 @@ def valider_entrees(
 ) -> None:
     """Vérifie la validité des entrées de l'utilisateur."""
 
+    # Si aucun validateur n'a été fourni, en créer un à partir du JSON
     if validateur is None:
         validateur = creer_validateur()
 
-    # Vérifier le titre
+    # Refuser titre vide ou composé uniquement d'espaces
     if not chanson.strip():
         raise ErreurValidation("Veuillez écrire le titre de la chanson.")
 
-    # Vérifier l'artiste
+    # Refuser nom d'artiste vide ou composé uniquement d'espaces
     if not artiste.strip():
         raise ErreurValidation("Veuillez écrire le nom de l'artiste.")
 
-    # Vérifier les minutes
+    # Refuser minutes négatives
     if minutes < 0:
         raise ErreurValidation("Les minutes ne peuvent pas être négatives.")
 
-    # Vérifier les secondes
+    # Refuser seconde hors de 0 à 59
     if not 0 <= secondes <= 59:
         raise ErreurValidation("Les secondes doivent être entre 0 et 59.")
 
     # Regrouper toutes les valeurs à valider
-    valeurs_completes = valeurs.copy()
-    valeurs_completes["track_genre"] = genre
+    valeurs_completes = valeurs.copy()   # Copier caractéristiques musicales pour pas modifie dictionnaire original de l'interface
+    valeurs_completes["track_genre"] = genre   # Ajoute le genre dans les variables à valider
 
     # Valider les caractéristiques numériques et le genre
-    validateur.valider_tout(valeurs_completes)
+    validateur.valider_tout(valeurs_completes) # Erreur dès qu'une caractéristique est invalide
