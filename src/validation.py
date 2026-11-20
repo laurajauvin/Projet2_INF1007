@@ -1,10 +1,13 @@
 import json
 import os
+
 from .exceptions import ErreurValidation
 from .variables import (
     VariableNumerique,
     VariableCategorielle,
-    ValidateurVariables)
+    ValidateurVariables,
+)
+
 
 def creer_validateur():
     """Charge les métadonnées et crée le validateur."""
@@ -54,10 +57,13 @@ def valider_entrees(
     genre: str,
     minutes: int,
     secondes: int,
-    valeurs: dict[str, object], #on permet à valeurs de recevoir n'importe quel type de valeur pour que la validateur puisse vérifier et refuser les valeurs invalides
-    validateur: ValidateurVariables
+    valeurs: dict[str, object],
+    validateur: ValidateurVariables | None = None
 ) -> None:
     """Vérifie la validité des entrées de l'utilisateur."""
+
+    if validateur is None:
+        validateur = creer_validateur()
 
     # Vérifier le titre
     if not chanson.strip():
@@ -67,7 +73,7 @@ def valider_entrees(
     if not artiste.strip():
         raise ErreurValidation("Veuillez écrire le nom de l'artiste.")
 
-    # Vérifier les minutes:
+    # Vérifier les minutes
     if minutes < 0:
         raise ErreurValidation("Les minutes ne peuvent pas être négatives.")
 
