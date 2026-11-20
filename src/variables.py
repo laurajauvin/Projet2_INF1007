@@ -11,33 +11,36 @@ class Variable(ABC):
         """
         if not nom.strip():
             raise ErreurValidation("Le nom d'une variable ne peut pas être vide")
-        self._nom = nom
+        self._nom = nom #._ indique que cet attribut est destiné à être utilisé à l'intérieur de sa classe et de ses classes enfants
 
-    @abstractmethod
+    @abstractmethod #chaque classe enfant doit définir sa propre façon de valider une valeur
     def valider(self, valeur:object)-> None:
          """Valide une valeur; les classes enfants définissent les règles."""
-         raise NotImplementedError
+         raise NotImplementedError #empêche de créer une classe qui ne redéfinit pas cette méthode
 
     def __str__(self) -> str:
         """Renvoie le nom de la variable pour l'afficher sous forme de texte."""
         return self._nom
 
-    @property
+    #Permet de consulter le nom avec variable.nom sans accéder directement à l'attribut interne _nom
+    @property #(pas de setter car on ne modifie pas le nom)
     def nom(self) -> str:
         """Renvoie le nom de la variable."""
+ 
         return self._nom
 
+#classe enfant de Variable
 class VariableNumerique(Variable):
     """Variable dont la valeur doit être numérique et respecter un intervalle."""
 
     def __init__(self, nom: str, minimum: float, maximum: float) -> None:
         """Reçoit un nom et un intervalle; échoue si l'intervalle est inversé."""
-        super().__init__(nom)
+        super().__init__(nom) #appelle le constructeur de Variable 
 
         if minimum > maximum:
             raise ErreurValidation("Le minimum ne peut pas dépasser le maximum.")
 
-        self.__minimum = minimum
+        self.__minimum = minimum #double underscore: privés à la classe -> évite qu'une autre partie du code ne la modifie
         self.__maximum = maximum
 
     def valider(self, valeur: object)-> None:
@@ -51,8 +54,8 @@ class VariableNumerique(Variable):
 
         if not self.__minimum <= valeur <= self.__maximum:
             if self._nom == "duration_ms":
-                minimum = math.ceil(self.__minimum / 1000)
-                maximum = math.floor(self.__maximum / 1000)
+                minimum = math.ceil(self.__minimum / 1000) #arrondit borne min vers le haut
+                maximum = math.floor(self.__maximum / 1000) #arrondit borne max vers le bas
 
 
                 raise ErreurValidation(
@@ -86,7 +89,7 @@ class VariableCategorielle(Variable):
             raise ErreurValidation(f"{valeur} n'est pas une valeur autorisée pour {self._nom}.")
     
     
-class ValidateurVariables:
+class ValidateurVariables: #rassemble plusieurs objets Variable pour valider toutes les caractéristiques de la chanson
     """Regroupe les variables à valider."""
 
     def __init__(self, variables: list[Variable]) -> None:
@@ -94,14 +97,13 @@ class ValidateurVariables:
         self._variables = variables
 
     def valider_tout(self, valeurs: dict[str, object]) -> None:
-        """Valide chaque valeur associée à une variable.
+        """Valide chaque valeur entrée par l'utilisateur associée à une variable.
         Reçoit un dictionnaire indexé par les noms des variables.
         Lève ErreurValidation si une valeur est invalide.
         """
         for variable in self._variables:
             if variable.nom not in valeurs:
-                raise ErreurValidation(
-                    f"La valeur de {variable.nom} est manquante."
-                )
+                raise ErreurValidation(f"La valeur de {variable.nom} est manquante.")
 
-            variable.valider(valeurs[variable.nom])
+            #appelle la version de valider qui correspond au type réel de variable
+            variable.valider(valeurs[variable.nom]) 
