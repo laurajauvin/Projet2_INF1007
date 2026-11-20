@@ -171,4 +171,3 @@ if __name__ == "__main__": #empêche l'exécution du sample et nettoyage de donn
     # Afficher le graphique
     plt.show()
 
-

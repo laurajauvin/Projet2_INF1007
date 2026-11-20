@@ -12,6 +12,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.ensemble import RandomForestRegressor
 from .donnees import charger_donnees
+import time
+from functools import wraps
 
 
 #Volet 2.4: Établir une référence
@@ -40,7 +42,9 @@ def calculer_reference(y_train : pd.Series,y_test : pd.Series) -> float:
 
 #Volet 2.5: Entraîner et évaluer
 def creer_modele() -> Pipeline:
-    """Construit le pipeline d'encodage de prédiction de la popularité."""
+    """Construit le pipeline d'encodage de prédiction de la popularité.
+    Returns:
+        Pipeline: Pipeline contenant l'encodage du genre et la forêt aléatoire."""
 
     #Transformation de track_genre en valeurs numériques; garde les autres colonnes numériques (remainder = "passthrough")
     transformation = ColumnTransformer( transformers=[("genre", OneHotEncoder(handle_unknown="ignore"), ["track_genre"],)], remainder="passthrough")
@@ -48,9 +52,19 @@ def creer_modele() -> Pipeline:
     #Relier la transformation au modèle de forêt aléatoire
     return make_pipeline(transformation, RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1))
 
+def chronometrer(fonction):
+    """Mesure et affiche le temps d'exécution d'une fonction."""
+    @wraps(fonction)
+    def wrapper(*args, **kwargs):
+        debut = time.perf_counter()
+        resultat = fonction(*args, **kwargs)
+        duree = time.perf_counter() - debut
+        print(f"Temps d'entraînement : {duree:.2f} secondes")
+        return resultat
 
+    return wrapper
 
-
+@chronometrer
 def entrainer_modele(modele: Pipeline,x_train: pd.DataFrame,y_train: pd.Series) -> Pipeline:
     """Entraîne le modèle sur les données d'entraînement et le renvoie."""
     modele.fit(x_train, y_train)

@@ -43,11 +43,11 @@ def afficher_interface() -> None:
 
 
     # Vérifier que les fichiers nécessaires existent
-    if not os.path.exists(chemin_metadonnees):
+    if not os.path.isfile(chemin_metadonnees):
         st.error("Le fichier des métadonnées est introuvable.")
         st.stop()
 
-    if not os.path.exists(chemin_modele):
+    if not os.path.isfile(chemin_modele):
         st.error("Le fichier du modèle entraîné est introuvable.")
         st.stop()
 
@@ -120,7 +120,7 @@ def afficher_interface() -> None:
 
         st.session_state.historique = []
 
-        if os.path.exists(chemin_historique):
+        if os.path.isfile(chemin_historique):
 
             try:
                 historique_df = pd.read_csv(chemin_historique)
