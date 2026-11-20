@@ -6,7 +6,9 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import json
 import os
-from .entrainement import predire_popularite
+import pickle
+import zlib
+from .entrainement import predire_popularite, calculer_importances
 from .exceptions import ErreurValidation
 from .validation import valider_entrees
 from .variables import (VariableCategorielle,VariableNumerique,ValidateurVariables)
@@ -96,7 +98,18 @@ def afficher_interface() -> None:
     try:
         modele = joblib.load(chemin_modele)
 
-    except Exception:
+    except (
+        OSError,
+        EOFError,
+        ValueError,
+        TypeError,
+        KeyError,
+        AttributeError,
+        ImportError,
+        IndexError,
+        pickle.UnpicklingError,
+        zlib.error
+    ):
         st.error(
             "Le fichier du modèle est invalide ou impossible à charger."
         )
@@ -472,42 +485,8 @@ def afficher_interface() -> None:
         st.markdown("<div style='padding-top: 20px;'></div>",
             unsafe_allow_html=True)
 
-        # Récupérer le modèle et le préprocesseur
-        random_forest = modele.named_steps["randomforestregressor"]
-        preprocesseur = modele.named_steps["columntransformer"]
-
-        importances = random_forest.feature_importances_
-        noms = preprocesseur.get_feature_names_out()
-
-        # Regrouper les importances par caractéristique
-        importances_caracteristiques = {
-            "Dansabilité": 0,
-            "Énergie": 0,
-            "Tempo": 0,
-            "Volume": 0,
-            "Durée": 0,
-            "Genre musical": 0
-        }
-
-        for nom, importance in zip(noms, importances):
-
-            if "genre__track_genre" in nom:
-                importances_caracteristiques["Genre musical"] += importance
-
-            elif "danceability" in nom:
-                importances_caracteristiques["Dansabilité"] = importance
-
-            elif "energy" in nom:
-                importances_caracteristiques["Énergie"] = importance
-
-            elif "tempo" in nom:
-                importances_caracteristiques["Tempo"] = importance
-
-            elif "loudness" in nom:
-                importances_caracteristiques["Volume"] = importance
-
-            elif "duration_ms" in nom:
-                importances_caracteristiques["Durée"] = importance
+        # Récupérer les importances regroupées par caractéristique
+        importances_caracteristiques = calculer_importances(modele)
 
         # Créer un DataFrame et trier les importances
         df_importances = pd.DataFrame({
