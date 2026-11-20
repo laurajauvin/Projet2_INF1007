@@ -72,8 +72,15 @@ def afficher_interface() -> None:
 
     genres = metadonnees["genres_possibles"]
 
-    # Sauvegarde et récupère le modèle déjà entraîné pour le réutiliser
-    modele = joblib.load(chemin_modele)
+    # Charger le modèle déjà entraîné
+    try:
+        modele = joblib.load(chemin_modele)
+
+    except Exception:
+        st.error(
+            "Le fichier du modèle est invalide ou impossible à charger."
+        )
+        st.stop()
 
     # Charger l'historique existant au démarrage
     if "historique" not in st.session_state:
