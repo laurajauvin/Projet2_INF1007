@@ -49,8 +49,15 @@ def afficher_interface() -> None:
 
 
     # Charger les métadonnées
-    with open(chemin_metadonnees, "r", encoding="utf-8") as fichier:
-        metadonnees = json.load(fichier)
+    try:
+        with open(chemin_metadonnees, "r", encoding="utf-8") as fichier:
+            metadonnees = json.load(fichier)
+
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+        st.error(
+            "Le fichier des métadonnées est invalide ou impossible à lire."
+        )
+        st.stop()
 
     # Attitrer chaque contrainte à une variable
     intervalles = metadonnees["intervalles_numeriques"]

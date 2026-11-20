@@ -6,42 +6,46 @@ from .variables import (
     VariableCategorielle,
     ValidateurVariables)
 
-# Charger les métadonnées
-dossier_src = os.path.dirname(os.path.abspath(__file__))
-dossier_projet = os.path.dirname(dossier_src)
+def creer_validateur():
+    """Charge les métadonnées et crée le validateur."""
 
-chemin_json = os.path.join(
-    dossier_projet,
-    "modeles",
-    "metadonnees.json"
-)
+    dossier_src = os.path.dirname(os.path.abspath(__file__))
+    dossier_projet = os.path.dirname(dossier_src)
 
-with open(chemin_json, "r", encoding="utf-8") as fichier:
-    metadonnees = json.load(fichier)
+    chemin_json = os.path.join(
+        dossier_projet,
+        "modeles",
+        "metadonnees.json"
+    )
 
+    try:
+        with open(chemin_json, "r", encoding="utf-8") as fichier:
+            metadonnees = json.load(fichier)
 
-# Créer les objets représentant les caractéristiques numériques
-variables = []
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError) as erreur:
+        raise ErreurValidation(
+            "Le fichier des métadonnées est invalide ou impossible à lire."
+        ) from erreur
 
-for nom, intervalle in metadonnees["intervalles_numeriques"].items():
+    variables = []
+
+    for nom, intervalle in metadonnees["intervalles_numeriques"].items():
+        variables.append(
+            VariableNumerique(
+                nom,
+                intervalle["min"],
+                intervalle["max"]
+            )
+        )
+
     variables.append(
-        VariableNumerique(
-            nom,
-            intervalle["min"],
-            intervalle["max"]
+        VariableCategorielle(
+            "genre",
+            metadonnees["genres_possibles"]
         )
     )
 
-# Ajouter la variable catégorielle
-variables.append(
-    VariableCategorielle(
-        "genre",
-        metadonnees["genres_possibles"]
-    )
-)
-
-# Créer le validateur qui contient les objets
-validateur = ValidateurVariables(variables)
+    return ValidateurVariables(variables)
 
 
 def valider_entrees(
@@ -75,4 +79,5 @@ def valider_entrees(
     valeurs_completes["genre"] = genre
 
     # Valider les caractéristiques numériques et le genre
+    validateur = creer_validateur()
     validateur.valider_tout(valeurs_completes)
