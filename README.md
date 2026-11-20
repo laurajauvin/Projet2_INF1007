@@ -1,5 +1,12 @@
 # Projet2_INF1007
 
+---- Documentation officielle ----
+
+Pandas : Getting started tutorials — documentation utilisée pour le chargement et l'exploration des données.
+Scikit-learn : Getting Started — documentation utilisée pour construire, entraîner et évaluer le modèle.
+Streamlit : Get started — documentation utilisée pour développer l'interface graphique.
+
+
 ---- Source des données ----
 
 * Nom : Spotify Tracks Dataset
@@ -65,3 +72,4 @@ Plusieurs décorateurs sont utilisés dans le projet :
 Les tests sont exécutés avec `pytest` et la couverture du code est mesurée avec `pytest-cov`.
 
 La dernière exécution a donné 29 tests réussis sur 29 et une couverture globale de 40 %.
+
