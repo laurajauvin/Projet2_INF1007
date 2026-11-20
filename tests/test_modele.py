@@ -203,7 +203,9 @@ def test_sauvegarde_modele_et_metadonnees(
 
 # ------ Tests de validation des entrées utilisateur ------
 
-# Données valides pour les tests
+
+# Données valides utilisées comme base pour les tests
+
 valeurs_valides = {
     "danceability": 0.5,
     "energy": 0.8,
@@ -215,6 +217,8 @@ valeurs_valides = {
 minutes_valides = 3
 secondes_valides = 0
 
+
+# Chanson valide passe toutes les vérifications sans déclencher d'exception
 
 def test_entrees_valides(validateur):
     """Vérifie que des entrées valides sont acceptées."""
@@ -228,6 +232,8 @@ def test_entrees_valides(validateur):
         validateur,
     )
 
+
+# Titre de chanson vide déclenche une erreur de validation
 
 def test_titre_vide(validateur):
     """Vérifie qu'un titre vide est refusé."""
@@ -243,6 +249,8 @@ def test_titre_vide(validateur):
         )
 
 
+# Nom d'artiste vide déclenche une erreur de validation
+
 def test_artiste_vide(validateur):
     """Vérifie qu'un artiste vide est refusé."""
     with pytest.raises(ErreurValidation):
@@ -257,6 +265,8 @@ def test_artiste_vide(validateur):
         )
 
 
+# Genre absent de la liste déclenche une erreur de validation
+
 def test_genre_invalide(validateur):
     """Vérifie qu'un genre inexistant est refusé."""
     with pytest.raises(ErreurValidation):
@@ -270,6 +280,8 @@ def test_genre_invalide(validateur):
             validateur,
         )
 
+
+# Dansabilité > 1.00 déclenche une erreur de validation
 
 def test_dansabilite_invalide(validateur):
     """Vérifie qu'une dansabilité supérieure à 1 est refusée."""
@@ -288,6 +300,8 @@ def test_dansabilite_invalide(validateur):
         )
 
 
+# Énergie < 0.00 déclenche une erreur de validation
+
 def test_energie_invalide(validateur):
     """Vérifie qu'une énergie inférieure à 0 est refusée."""
     valeurs = valeurs_valides.copy()
@@ -304,6 +318,10 @@ def test_energie_invalide(validateur):
             validateur,
         )
 
+
+# Valeur hors de l'intervalle numérique déclenche une erreur de validation
+
+# Tempo
 
 def test_tempo_invalide(validateur):
     """Vérifie qu'un tempo hors limites est refusé."""
@@ -322,6 +340,8 @@ def test_tempo_invalide(validateur):
         )
 
 
+# Volume
+
 def test_volume_invalide(validateur):
     """Vérifie qu'un volume hors limites est refusé."""
     valeurs = valeurs_valides.copy()
@@ -338,6 +358,8 @@ def test_volume_invalide(validateur):
             validateur,
         )
 
+
+# Durée
 
 def test_duree_invalide(validateur):
     """Vérifie qu'une durée hors limites est refusée."""
@@ -356,6 +378,8 @@ def test_duree_invalide(validateur):
         )
 
 
+# Valeur de tempo non numérique déclenche une erreur de validation
+
 def test_valeur_non_numerique(validateur):
     """Vérifie qu'une valeur non numérique est refusée."""
     valeurs = valeurs_valides.copy()
@@ -373,6 +397,8 @@ def test_valeur_non_numerique(validateur):
         )
 
 
+# Durée négative déclenche une erreur de validation
+
 def test_minutes_negatives(validateur):
     """Vérifie que les minutes négatives sont refusées."""
     with pytest.raises(ErreurValidation):
@@ -386,6 +412,8 @@ def test_minutes_negatives(validateur):
             validateur,
         )
 
+
+# Secondes > 59 déclenchent une erreur de validation
 
 def test_secondes_invalides(validateur):
     """Vérifie que 60 secondes sont refusées."""
@@ -403,17 +431,26 @@ def test_secondes_invalides(validateur):
 
 # ------ Tests directs de VariableNumerique ------
 
+
+# Vérification qu'une borne minimale d'un intervalle est acceptée en créant une variable
+
 def test_borne_minimale_acceptee():
     """Vérifie que la borne minimale est acceptée."""
     variable = VariableNumerique("danceability", 0, 1)
     variable.valider(0)
 
 
+# Vérification qu'une borne maximale d'un intervalle est acceptée en créant une variable
+
 def test_borne_maximale_acceptee():
     """Vérifie que la borne maximale est acceptée."""
     variable = VariableNumerique("danceability", 0, 1)
     variable.valider(1)
 
+
+# ---- Valeur sous le minimum et au-dessus du maximum refusées ----
+
+# Dansabilité
 
 @pytest.mark.parametrize("valeur", [-0.1, 1.1])
 def test_dansabilite_hors_limites(valeur):
@@ -423,6 +460,8 @@ def test_dansabilite_hors_limites(valeur):
     with pytest.raises(ErreurValidation):
         variable.valider(valeur)
 
+
+# Énergie
 
 @pytest.mark.parametrize("valeur", [-0.1, 1.1])
 def test_energie_hors_limites(valeur):
