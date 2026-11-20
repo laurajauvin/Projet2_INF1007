@@ -40,7 +40,7 @@ def creer_validateur():
 
     variables.append(
         VariableCategorielle(
-            "genre",
+            "track_genre",
             metadonnees["genres_possibles"]
         )
     )

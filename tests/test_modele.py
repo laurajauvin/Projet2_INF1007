@@ -6,8 +6,9 @@ import pytest
 from src.donnees import charger_donnees
 from src.entrainement import (calculer_importances, calculer_mae, calculer_mae_numpy, calculer_reference, creer_metadonnees, creer_modele, entrainer_modele, predire, sauvegarder_resultats)
 from src.exceptions import ErreurValidation
-from src.validation import valider_entrees
-from src.variables import VariableNumerique
+from src.validation import creer_validateur, valider_entrees
+
+
 
 #Colonnes que le modèle utilise comme entrée
 COLONNES_ENTREE = [
@@ -37,6 +38,10 @@ def modele_entraine(df_test: pd.DataFrame):
         df_test["popularity"],
     )
 
+@pytest.fixture(scope="module")
+def validateur():
+    """Crée le validateur une fois pour les tests de ce fichier."""
+    return creer_validateur()
 
 def test_reference_calcule_mae() -> None:
     """Vérifie la MAE de référence sur un exemple calculable à la main."""
@@ -185,18 +190,18 @@ minutes_valides = 3
 secondes_valides = 0
 
 
-def test_entrees_valides():
+def test_entrees_valides(validateur):
     valider_entrees(
         "Ma chanson",
         "Mon artiste",
         "pop",
         minutes_valides,
         secondes_valides,
-        valeurs_valides
+        valeurs_valides, validateur
     )
 
 
-def test_titre_vide():
+def test_titre_vide(validateur):
     with pytest.raises(ErreurValidation):
         valider_entrees(
             "",
@@ -204,11 +209,12 @@ def test_titre_vide():
             "pop",
             minutes_valides,
             secondes_valides,
-            valeurs_valides
+            valeurs_valides,
+            validateur
         )
 
 
-def test_artiste_vide():
+def test_artiste_vide(validateur):
     with pytest.raises(ErreurValidation):
         valider_entrees(
             "Ma chanson",
@@ -216,11 +222,12 @@ def test_artiste_vide():
             "pop",
             minutes_valides,
             secondes_valides,
-            valeurs_valides
+            valeurs_valides,
+            validateur
         )
 
 
-def test_genre_invalide():
+def test_genre_invalide(validateur):
     with pytest.raises(ErreurValidation):
         valider_entrees(
             "Ma chanson",
@@ -228,11 +235,12 @@ def test_genre_invalide():
             "jazz-invalide",
             minutes_valides,
             secondes_valides,
-            valeurs_valides
+            valeurs_valides,
+            validateur
         )
 
 
-def test_dansabilite_invalide():
+def test_dansabilite_invalide(validateur):
     valeurs = valeurs_valides.copy()
     valeurs["danceability"] = 1.5
 
@@ -243,11 +251,12 @@ def test_dansabilite_invalide():
             "pop",
             minutes_valides,
             secondes_valides,
-            valeurs
+            valeurs,
+            validateur
         )
 
 
-def test_energie_invalide():
+def test_energie_invalide(validateur):
     valeurs = valeurs_valides.copy()
     valeurs["energy"] = -0.5
 
@@ -258,11 +267,12 @@ def test_energie_invalide():
             "pop",
             minutes_valides,
             secondes_valides,
-            valeurs
+            valeurs,
+            validateur
         )
 
 
-def test_tempo_invalide():
+def test_tempo_invalide(validateur):
     valeurs = valeurs_valides.copy()
     valeurs["tempo"] = 300.0
 
@@ -273,11 +283,12 @@ def test_tempo_invalide():
             "pop",
             minutes_valides,
             secondes_valides,
-            valeurs
+            valeurs,
+            validateur
         )
 
 
-def test_volume_invalide():
+def test_volume_invalide(validateur):
     valeurs = valeurs_valides.copy()
     valeurs["loudness"] = 5.0
 
@@ -288,11 +299,12 @@ def test_volume_invalide():
             "pop",
             minutes_valides,
             secondes_valides,
-            valeurs
+            valeurs,
+            validateur
         )
 
 
-def test_duree_invalide():
+def test_duree_invalide(validateur):
     valeurs = valeurs_valides.copy()
     valeurs["duration_ms"] = 10000000
 
@@ -303,11 +315,12 @@ def test_duree_invalide():
             "pop",
             minutes_valides,
             secondes_valides,
-            valeurs
+            valeurs,
+            validateur
         )
 
 
-def test_valeur_non_numerique():
+def test_valeur_non_numerique(validateur):
     valeurs = valeurs_valides.copy()
     valeurs["tempo"] = "rapide"
 
@@ -318,11 +331,12 @@ def test_valeur_non_numerique():
             "pop",
             minutes_valides,
             secondes_valides,
-            valeurs
+            valeurs,
+            validateur
         )
 
 
-def test_minutes_negatives():
+def test_minutes_negatives(validateur):
     with pytest.raises(ErreurValidation):
         valider_entrees(
             "Ma chanson",
@@ -330,11 +344,12 @@ def test_minutes_negatives():
             "pop",
             -1,
             0,
-            valeurs_valides
+            valeurs_valides,
+            validateur
         )
 
 
-def test_secondes_invalides():
+def test_secondes_invalides(validateur):
     with pytest.raises(ErreurValidation):
         valider_entrees(
             "Ma chanson",
@@ -342,5 +357,6 @@ def test_secondes_invalides():
             "pop",
             3,
             60,
-            valeurs_valides
+            valeurs_valides,
+            validateur
         )

@@ -6,6 +6,9 @@ class Variable(ABC):
     """Classe parente des variables que l'interface doit valider."""
 
     def __init__(self, nom: str)-> None:
+        """Reçoit le nom interne de la variable.
+        Lève ErreurValidation si le nom est vide.
+        """
         if not nom.strip():
             raise ErreurValidation("Le nom d'une variable ne peut pas être vide")
         self._nom = nom
@@ -87,8 +90,13 @@ class ValidateurVariables:
     """Regroupe les variables à valider."""
 
     def __init__(self, variables: list[Variable]) -> None:
+        """Reçoit et conserve la liste des variables à valider."""
         self._variables = variables
 
     def valider_tout(self, valeurs: dict[str, object]) -> None:
+        """Valide chaque valeur associée à une variable.
+        Reçoit un dictionnaire indexé par les noms des variables.
+        Lève ErreurValidation si une valeur est invalide.
+        """
         for variable in self._variables:
             variable.valider(valeurs[variable.nom])
