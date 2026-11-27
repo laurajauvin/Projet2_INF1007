@@ -248,9 +248,9 @@ Le projet utilise plusieurs notions de programmation orientée objet et de déco
 
 Les tests automatisés sont réalisés avec Pytest.
 
-Le projet contient **29 tests automatisés** qui vérifient notamment le chargement des données, la validation des entrées, les variables et les fonctions d'entraînement.
+Le projet contient 29 tests automatisés qui vérifient notamment le chargement des données, la validation des entrées, les variables et les fonctions d'entraînement.
 
-La couverture globale du code obtenue est de **41 %**.
+La couverture globale du code obtenue est de 41 %. Ce résultat s'explique notamment par le fait que les tests automatisés vérifient principalement la logique du programme et ne testent pas directement l'interface graphique (interface.py) ni le lancement de l'application (main.py). Les modules de validation et de gestion des variables présentent toutefois des couvertures respectives de 88 % et 85 %.
 
 L'intégration continue est configurée avec GitHub Actions afin d'exécuter automatiquement les tests lors des événements prévus dans le dépôt.
 
