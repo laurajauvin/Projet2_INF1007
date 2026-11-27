@@ -50,6 +50,53 @@ Pour obtenir le rapport de couverture des tests :
 python -m pytest --cov=src --cov-report=term-missing
 
 
+## Structure du projet
+
+Projet2_INF1007/
+│
+├── .github/
+│   └── workflows/
+│       └── tests.yml
+│
+├── .streamlit/
+│   └── config.toml
+│
+├── donnees/
+│   ├── dataset.csv
+│   ├── dataset_30000.csv
+│   └── dataset_30000_clean.csv
+│
+├── modeles/
+│   ├── modele_popularite.joblib
+│   └── metadonnees.json
+│
+├── src/
+│   ├── donnees.py
+│   ├── entrainement.py
+│   ├── exceptions.py
+│   ├── interface.py
+│   ├── main.py
+│   ├── validation.py
+│   └── variables.py
+│
+├── tests/
+│   └── test_modele.py
+│
+├── requirements.txt
+├── README.md
+├── DECISIONS.md
+└── JOURNAL_IA.md
+
+Le dossier src/ contient les modules responsables du traitement des données, de l'entraînement du modèle, de la validation des entrées et de l'interface graphique. Le dossier tests/ contient les tests automatisés du projet.
+
+## Schéma de la structure du projet
+
+Le schéma suivant présente l'organisation des différents modules
+et leurs interactions au sein de l'application.
+
+![Schéma de la structure du projet](images/structure_projet.png)
+
+
 ## Source et préparation des données
 
 Le jeu de données utilisé est le Spotify Tracks Dataset, créé par Maharshi Pandya et disponible sur Kaggle :
@@ -71,6 +118,26 @@ Le nettoyage et l'échantillonnage peuvent être reproduits en exécutant le scr
 python -m src.donnees
 
 Le fichier dataset_30000_clean.csv est utilisé pour l'entraînement et l'évaluation du modèle.
+
+
+## Licence du jeu de données
+
+Le Spotify Tracks Dataset est distribué sous la licence Open Database License (ODbL) v1.0 pour la base de données. Les contenus sont indiqués comme étant © Original Authors.
+
+La licence ODbL autorise l'utilisation, la modification et la redistribution de la base de données, sous réserve de respecter ses conditions, notamment l'attribution de la source et le partage à l'identique des bases de données dérivées.
+
+Les opérations d'échantillonnage et de nettoyage effectuées dans le cadre du projet sont décrites dans le fichier src/donnees.py.
+
+- Source : 
+  Spotify Tracks Dataset – Kaggle 
+  https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset
+
+- Licence : 
+  Open Database License (ODbL) v1.0
+  https://opendatacommons.org/licenses/odbl/1.0/
+
+Les fichiers de données échantillonnés et nettoyés dans le cadre du projet sont également mis à disposition sous la licence ODbL v1.0, conformément au principe de partage à l'identique.
+
 
 ## Exploration et nettoyage des données
 
@@ -184,7 +251,7 @@ Les tests automatisés sont réalisés avec Pytest.
 
 Le projet contient 29 tests automatisés qui vérifient notamment le chargement des données, la validation des entrées, les variables et les fonctions d'entraînement.
 
-La couverture globale du code obtenue est de 40%.
+La couverture globale du code obtenue est de 41%.
 
 L'intégration continue est configurée avec GitHub Actions afin d'exécuter automatiquement les tests lors des événements prévus dans le dépôt.
 
