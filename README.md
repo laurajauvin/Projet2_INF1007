@@ -52,6 +52,7 @@ python -m pytest --cov=src --cov-report=term-missing
 
 ## Structure du projet
 
+```text
 Projet2_INF1007/
 │
 ├── .github/
@@ -86,6 +87,7 @@ Projet2_INF1007/
 ├── README.md
 ├── DECISIONS.md
 └── JOURNAL_IA.md
+```
 
 Le dossier src/ contient les modules responsables du traitement des données, de l'entraînement du modèle, de la validation des entrées et de l'interface graphique. Le dossier tests/ contient les tests automatisés du projet.
 
