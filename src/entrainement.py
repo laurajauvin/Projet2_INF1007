@@ -14,7 +14,7 @@ from sklearn.ensemble import RandomForestRegressor
 from .donnees import charger_donnees
 import time
 from functools import wraps 
-#wraps: aide le décorateur à conserve le nom et les infos de la fonction décorée
+#wraps: aide le décorateur à conserver le nom et les infos de la fonction décorée
 
 #Volet 2.4: Établir une référence
 def calculer_reference(y_train : pd.Series,y_test : pd.Series) -> float:

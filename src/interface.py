@@ -10,8 +10,8 @@ import pickle
 import zlib
 from .entrainement import predire_popularite, calculer_importances
 from .exceptions import ErreurValidation
-from .validation import valider_entrees
-from .variables import (VariableCategorielle,VariableNumerique,ValidateurVariables)
+from .validation import valider_entrees, creer_validateur
+
 
 
 def afficher_interface() -> None:
@@ -69,15 +69,8 @@ def afficher_interface() -> None:
         )
         st.stop()
 
-
-    # Utilise les métadonnées du fichier JSON pour construire automatiquement nos validateurs
-    variables_a_valider = [VariableCategorielle("track_genre",metadonnees["genres_possibles"])]
-    for nom, bornes in metadonnees["intervalles_numeriques"].items(): # Récupére limites des intervalles des variables numériques
-        variables_a_valider.append(
-            VariableNumerique(nom, bornes["min"], bornes["max"]))  # Crée un validateur avec valeur min et max de chaque variable
-
-    # Regroupe tous les validateurs dans un seul objet (utilisés dans fonction valider_entrees)
-    validateur = ValidateurVariables(variables_a_valider)
+    #Crée le validateur en lisant les genres et bornes dans le fichier json
+    validateur = creer_validateur()
 
 
     # ---- Récupéree les intervalles numériques définis dans le JSON ----
