@@ -1,114 +1,262 @@
-# Projet2_INF1007
+# Projet 2 — INF1007
 
+## Description du projet
 
-### Comandes présentation ###
+Ce projet consiste à développer une application permettant de prédire la popularité d'une chanson à partir de certaines de ses caractéristiques musicales. L'application utilise un modèle d'apprentissage automatique entraîné sur un jeu de données provenant de Spotify.
 
-cd "C:\Users\laura\OneDrive - polymtl\Uni\INF1007\Projet2_INF1007"
-streamlit run src\main.py
-python -m pytest
-python -m pytest --cov=src --cov-report=term-missing
+L'utilisateur peut entrer les caractéristiques d'une chanson dans une interface graphique développée avec Streamlit. L'application affiche ensuite une prédiction de popularité ainsi que des informations complémentaires sur le modèle.
+
+## Technologie utilisée : Streamlit
+
+L'interface graphique du projet a été développée avec **Streamlit**, une bibliothèque Python permettant de créer des applications Web interactives directement à partir de code Python.
+
+Cette technologie a été choisie puisqu'elle permet de concevoir rapidement une interface conviviale tout en restant dans l'environnement Python utilisé pour le développement du projet.
+
+L'application fonctionne localement sur l'ordinateur de l'utilisateur et est accessible dans un navigateur Web à l'aide d'une adresse locale.
+
+## Installation et exécution
+
+Toutes les commandes suivantes doivent être exécutées à partir du répertoire principal du projet.
+
+### 1. Installer les dépendances
+
+```bash
 pip install -r requirements.txt
-python --version
+```
 
+### 2. Préparer les données (facultatif)
 
-### Chansons à tester ###
+Les fichiers de données sont déjà inclus dans le dépôt. Pour reproduire l'échantillonnage et le nettoyage :
 
-Blinding Lights — The Weeknd
-Danceability	0.51
-Energy	0.73
-Tempo	171
-Loudness	-6.0
-Duration	200 s
-Genre	pop
+```bash
+python -m src.donnees
+```
 
-SBad Romance — Lady Gaga
-Danceability	0.70
-Energy	0.85
-Tempo	119
-Loudness	-4.5
-Duration	295 s
-Genre	dance
+### 3. Entraîner le modèle (facultatif)
 
-Billie Jean — Michael Jackson
-Danceability	0.92
-Energy	0.65
-Tempo	117
-Loudness	-5.5
-Duration	294 s
-Genre	disco
+Pour entraîner à nouveau le modèle et mettre à jour les fichiers sauvegardés :
 
-###
+```bash
+python -m src.entrainement
+```
 
----- Documentation officielle ----
+### 4. Lancer l'application
 
-Pandas : Getting started tutorials — documentation utilisée pour le chargement et l'exploration des données.
-Scikit-learn : Getting Started — documentation utilisée pour construire, entraîner et évaluer le modèle.
-Streamlit : Get started — documentation utilisée pour développer l'interface graphique.
+```bash
+python -m streamlit run src/main.py
+```
 
+### 5. Exécuter les tests
 
----- Source des données ----
+```bash
+python -m pytest
+```
 
-* Nom : Spotify Tracks Dataset
-* Auteur : Maharshi Pandya
-* Source : Kaggle – https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset
-* Jeu de données original : environ 114 000 chansons.
-* Jeu de données utilisé : sélection aléatoire de 30 000 chansons.
-* Licence : Open Data Commons Open Database License (ODbL) 1.0.
+Pour obtenir le rapport de couverture des tests :
 
-Le jeu de données a été sélectionné et réduit à 30 000 observations à l’aide d’un échantillonnage aléatoire (random_state=42).
+```bash
+python -m pytest --cov=src --cov-report=term-missing
+```
 
+## Structure du projet
 
----- Chargement et exploration des données ----
+```text
+Projet2_INF1007/
+│
+├── .github/
+│   └── workflows/
+│       └── tests.yml
+│
+├── .streamlit/
+│   └── config.toml
+│
+├── donnees/
+│   ├── dataset.csv
+│   ├── dataset_30000.csv
+│   └── dataset_30000_clean.csv
+│
+├── modeles/
+│   ├── modele_popularite.joblib
+│   └── metadonnees.json
+│
+├── src/
+│   ├── donnees.py
+│   ├── entrainement.py
+│   ├── exceptions.py
+│   ├── interface.py
+│   ├── main.py
+│   ├── validation.py
+│   └── variables.py
+│
+├── tests/
+│   └── test_modele.py
+│
+├── requirements.txt
+├── README.md
+├── DECISIONS.md
+└── JOURNAL_IA.md
+```
 
-Nous avons utilisé la bibliothèque Pandas pour charger le jeu de données Spotify à partir d'un fichier CSV. Le jeu de données initial contenait 114 000 chansons et 21 colonnes. Nous avons ensuite sélectionné aléatoirement 30 000 chansons à l'aide de sample(), avec une valeur fixe de random_state=42 afin d'obtenir un échantillon reproductible.
+Le dossier `src/` contient les modules responsables du traitement des données, de l'entraînement du modèle, de la validation des entrées et de l'interface graphique. Le dossier `tests/` contient les tests automatisés du projet.
 
-Nous avons examiné les types de données avec info(), les statistiques descriptives avec describe() et les valeurs manquantes avec isnull().sum(). Nous avons également vérifié la présence de doublons et de valeurs suspectes, notamment les durées et les tempos égaux à zéro.
+## Schéma de la structure du projet
 
----- Nettoyage des données ----
+Le schéma suivant présente l'organisation des différents modules et leurs interactions au sein de l'application.
 
-L'exploration a révélé :
+![Schéma de la structure du projet](images/structure_projet.png)
 
-3 valeurs manquantes au total, dans les colonnes artists, album_name et track_name (une dans chaque colonne).
+## Source et préparation des données
 
-Aucun doublon dans notre échantillon.
+Le jeu de données utilisé est le **Spotify Tracks Dataset**, créé par Maharshi Pandya et disponible sur [Kaggle](https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset).
 
-1 chanson ayant une durée égale à zéro.
+Le jeu de données original contient environ 114 000 chansons et 21 variables. Un échantillon aléatoire de 30 000 chansons a été sélectionné à l'aide de `random_state=42`.
 
-52 chansons ayant un tempo égal à zéro.
+Les fichiers sont inclus dans le dépôt GitHub, dans le dossier `donnees/` :
 
-Aucune valeur hors de l'intervalle [0, 1] dans les variables musicales vérifiées.
+| Fichier | Description |
+|---|---|
+| `dataset.csv` | Jeu de données original |
+| `dataset_30000.csv` | Échantillon aléatoire de 30 000 chansons |
+| `dataset_30000_clean.csv` | Jeu de données après nettoyage, contenant 29 921 chansons |
 
-Nous avons retiré la colonne Unnamed: 0, puisqu'elle correspond à un index inutile pour notre analyse. Nous avons également supprimé les chansons ayant une durée ou un tempo égal à zéro, car ces valeurs ne sont pas pertinentes pour notre modèle de prédiction.
+Le nettoyage et l'échantillonnage peuvent être reproduits en exécutant le script `src/donnees.py` à partir du répertoire principal du projet :
 
-Nous avons conservé les valeurs manquantes dans artists, album_name et track_name, puisque ces colonnes ne sont pas utilisées comme variables d'entrée du modèle. Elles peuvent toutefois être utiles pour identifier les chansons.
+```bash
+python -m src.donnees
+```
 
-Après le nettoyage, notre jeu de données contient 29 947 chansons.
+Le fichier `dataset_30000_clean.csv` est utilisé pour l'entraînement et l'évaluation du modèle.
 
-----Définition du problème----
+## Licence du jeu de données
 
-Notre variable cible est la popularité d'une chanson (popularity). Comme nous cherchons une valeur numérique, il s'agit d'un problème de régression. Le modèle choisi est une forêt aléatoire de régression (RandomForestRegressor). Elle prédit une valeur numérique et peut apprendre des relations plus complexes entre les caractéristiques des chansons et leur popularité. Nous avons choisi le MAE comme métrique d'évaluation, car il mesure l'écart absolu moyen entre les valeurs de popularité prédites par notre modèle et les valeurs réelles. Cette métrique est facile à interpréter puisque la popularité est mesurée sur une échelle de 0 à 100. Par exemple, un MAE de 8 signifie que les prédictions s'écartent en moyenne de 8 points des valeurs réelles.
+Le Spotify Tracks Dataset est indiqué comme étant distribué sous la licence **Open Database License (ODbL) v1.0** pour la base de données. Les contenus sont toutefois identifiés comme étant © Original Authors.
 
+La licence ODbL autorise l'utilisation, la modification et la redistribution de la base de données sous réserve du respect de ses conditions, notamment l'attribution de la source et le partage à l'identique des bases de données dérivées. Les droits associés aux contenus doivent également être pris en compte.
 
----- Séparation des données ----
+- **Source :** [Spotify Tracks Dataset – Kaggle](https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset)
+- **Licence :** [Open Database License (ODbL) v1.0](https://opendatacommons.org/licenses/odbl/1.0/)
 
-Après avoir nettoyé notre dataset, nous avons séparé les 29 947 chansons en deux ensembles : 80 % pour l'entraînement et 20 % pour les tests. Les données d'entraînement permettent au modèle d'apprendre les relations entre les caractéristiques musicales et la popularité des chansons. Les données de test servent ensuite à évaluer sa capacité à prédire la popularité de chansons qu'il n'a pas utilisées pendant son apprentissage. Nous avons utilisé random_state=42 afin de rendre notre séparation reproductible.
+Les opérations d'échantillonnage et de nettoyage effectuées dans le cadre du projet sont décrites dans le fichier `src/donnees.py`.
 
----- Entraînement et évaluation ----
+## Exploration et nettoyage des données
 
-Sur l’ensemble de test, la forêt aléatoire obtient une MAE de 12,98, contre 19,01 pour la référence basée sur la moyenne. Elle réduit donc l’erreur moyenne d’environ 6 points de popularité et fait mieux que cette référence. Le graphique prédit contre réel montre que le modèle suit partiellement la tendance, mais que les prédictions restent dispersées autour de la diagonale. Elles sont concentrées surtout entre 10 et 60 : le modèle surestime souvent les chansons dont la popularité réelle est très basse et sous-estime les plus populaires. La MAE indique une erreur absolue moyenne d’environ 13 points. Les différentes caractéristiques audio et le genre aident le modèle dans sa prédiction, puisqu’il fait mieux que la référence, mais elles ne suffisent pas à prédire précisément la popularité de chaque chanson. 
+Une exploration initiale a été effectuée afin de mieux comprendre les caractéristiques du jeu de données. Elle comprend notamment l'analyse des distributions, des valeurs manquantes et des valeurs aberrantes.
 
----- Utilisation des décorateurs ----
+Les opérations de nettoyage suivantes ont été réalisées :
 
-Plusieurs décorateurs sont utilisés dans le projet :
+- Suppression de la colonne `Unnamed: 0`, qui correspond à un index inutile.
+- Suppression des chansons dont la durée dépasse 20 minutes, puisqu'elles sont considérées comme atypiques pour le contexte du projet.
+- Suppression des chansons dont la durée est égale à zéro.
+- Suppression des chansons dont le tempo est égal à zéro.
+- Vérification des valeurs manquantes, des doublons et des valeurs hors limites.
 
-- `@abstractmethod` définit la méthode `valider()` comme abstraite dans la classe parente `Variable`. Les classes enfants doivent donc implémenter leur propre validation.
-- `@property` permet d'accéder au nom d'une variable avec `variable.nom`, tout en conservant une méthode qui contrôle cet accès.
-- `@pytest.fixture` permet de préparer des données et des objets réutilisables dans plusieurs tests, évitant de répéter leur création.
-- `@chronometrer` est un décorateur personnalisé qui mesure et affiche le temps d'exécution de la fonction `entrainer_modele()`, ce qui permet de connaître la durée nécessaire à l'entraînement du modèle.
+Les trois valeurs manquantes dans les colonnes `artists`, `album_name` et `track_name` ont été conservées, puisque ces variables ne sont pas utilisées par le modèle.
 
----- Couverture des tests ----
+Après le nettoyage, le jeu de données contient **29 921 chansons**.
 
-Les tests sont exécutés avec `pytest` et la couverture du code est mesurée avec `pytest-cov`.
+## Définition du problème
 
-La dernière exécution a donné 29 tests réussis sur 29 et une couverture globale de 40 %.
+Le projet utilise un problème de **régression supervisée** afin de prédire la popularité d'une chanson.
 
+La variable cible est `popularity`, dont les valeurs se situent sur une échelle de 0 à 100.
+
+Les six variables utilisées comme entrées du modèle sont :
+
+| Variable | Description |
+|---|---|
+| `danceability` | Degré auquel une chanson convient à la danse |
+| `energy` | Niveau d'énergie d'une chanson |
+| `tempo` | Tempo de la chanson, en battements par minute |
+| `loudness` | Volume sonore moyen, en décibels |
+| `duration_ms` | Durée de la chanson, en millisecondes |
+| `track_genre` | Genre musical de la chanson |
+
+## Entraînement du modèle
+
+Le modèle utilisé est un `RandomForestRegressor` de la bibliothèque Scikit-learn.
+
+Le prétraitement des données est effectué à l'aide d'un `ColumnTransformer` et d'un `OneHotEncoder` pour convertir la variable catégorielle `track_genre` en données numériques. Le modèle est ensuite intégré dans un pipeline afin de regrouper les étapes de prétraitement et d'entraînement.
+
+Les paramètres principaux du modèle sont :
+
+| Paramètre | Valeur |
+|---|---:|
+| Nombre d'arbres | 100 |
+| `random_state` | 42 |
+| `n_jobs` | -1 |
+
+Les données sont séparées en deux ensembles :
+
+- 80 % pour l'entraînement.
+- 20 % pour les tests.
+
+Une référence simple, correspondant à la prédiction de la popularité moyenne de l'ensemble d'entraînement, est également utilisée afin de comparer les performances du modèle.
+
+## Évaluation du modèle
+
+La performance du modèle est évaluée à l'aide de l'**erreur absolue moyenne (MAE)**.
+
+La MAE représente la moyenne des écarts absolus entre les valeurs prédites et les valeurs réelles. Une valeur plus faible indique donc de meilleures prédictions.
+
+Les résultats obtenus sont les suivants :
+
+| Modèle | MAE |
+|---|---:|
+| Référence basée sur la moyenne | 18,79 |
+| Random Forest | 12,80 |
+
+Le modèle Random Forest obtient une MAE inférieure à celle de la référence. Il permet donc de mieux prédire la popularité des chansons que la simple utilisation de la moyenne.
+
+Les calculs de la MAE sont également effectués avec NumPy afin de vérifier leur concordance avec ceux de Scikit-learn.
+
+## Interface graphique
+
+L'application utilise Streamlit pour permettre à l'utilisateur d'interagir avec le modèle.
+
+Elle permet notamment de :
+
+- Entrer les caractéristiques d'une chanson.
+- Vérifier la validité des valeurs saisies.
+- Obtenir une prédiction de popularité.
+- Consulter l'historique des prédictions.
+- Visualiser l'importance des variables utilisées par le modèle.
+
+Les prédictions sont enregistrées dans un fichier CSV afin de conserver un historique des utilisations.
+
+## Sauvegarde du modèle
+
+Le modèle entraîné est sauvegardé à l'aide de Joblib dans le fichier :
+
+`modeles/modele_popularite.joblib`
+
+Les métadonnées associées au modèle sont enregistrées dans un fichier JSON :
+
+`modeles/metadonnees.json`
+
+Ces fichiers permettent à l'application de charger le modèle déjà entraîné sans devoir recommencer l'entraînement à chaque lancement.
+
+## Programmation orientée objet et décorateurs
+
+Le projet utilise plusieurs notions de programmation orientée objet et de décorateurs :
+
+- `@abstractmethod` : permet de définir une méthode abstraite dans la classe de base `Variable`, que les classes dérivées doivent implémenter.
+- `@property` : permet d'accéder à certaines propriétés d'un objet, notamment le nom d'une variable.
+- `@pytest.fixture` : permet de préparer des données ou des objets réutilisables dans les tests.
+- `@chronometrer` : décorateur personnalisé qui mesure le temps d'exécution de la fonction d'entraînement du modèle.
+
+## Tests et couverture du code
+
+Les tests automatisés sont réalisés avec Pytest.
+
+Le projet contient **29 tests automatisés** qui vérifient notamment le chargement des données, la validation des entrées, les variables et les fonctions d'entraînement.
+
+La couverture globale du code obtenue est de **41 %**.
+
+L'intégration continue est configurée avec GitHub Actions afin d'exécuter automatiquement les tests lors des événements prévus dans le dépôt.
+
+## Documentation consultée
+
+- [Pandas](https://pandas.pydata.org/docs/getting_started/intro_tutorials/index.html)
+- [Scikit-learn](https://scikit-learn.org/stable/getting_started.html)
+- [Streamlit](https://docs.streamlit.io/get-started)
+- [Pytest](https://docs.pytest.org/)

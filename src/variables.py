@@ -1,6 +1,6 @@
 import math
 from abc import ABC, abstractmethod
-from .exceptions import ErreurValidation
+from src.exceptions import ErreurValidation
 
 class Variable(ABC):
     """Classe parente des variables que l'interface doit valider."""

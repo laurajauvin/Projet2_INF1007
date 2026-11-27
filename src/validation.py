@@ -1,15 +1,22 @@
 import json
 import os
-from .exceptions import ErreurValidation
-from .variables import (
+from src.exceptions import ErreurValidation
+from src.variables import (
     VariableNumerique,
     VariableCategorielle,
     ValidateurVariables,
 )
 
 
-def creer_validateur():
-    """Charge les métadonnées et crée le validateur."""
+def creer_validateur() -> ValidateurVariables:
+    
+    """Crée un validateur à partir des métadonnées du modèle.
+
+    Ne reçoit aucun argument.
+    Renvoie un objet ValidateurVariables contenant les règles de validation.
+    Lève ErreurValidation si le fichier de métadonnées est introuvable
+    ou si son contenu ne peut pas être lu correctement.
+    """
 
     # ---- Repérer le dossier du fichier actuel, puis remonter au dossier principal du projet ----
 
@@ -77,9 +84,16 @@ def valider_entrees(
     minutes: int,
     secondes: int,
     valeurs: dict[str, object],
-    validateur: ValidateurVariables | None = None
-) -> None:
-    """Vérifie la validité des entrées de l'utilisateur."""
+    validateur: ValidateurVariables | None = None) -> None:
+
+    """Vérifie les informations saisies pour une chanson.
+
+    Reçoit le titre, l'artiste, le genre, les caractéristiques numériques
+    et le validateur à utiliser.
+    Ne renvoie aucune valeur si toutes les entrées sont valides.
+    Lève ErreurValidation si une entrée est vide ou ne respecte pas
+    les règles de validation.
+    """
 
     # Si aucun validateur n'a été fourni, en créer un à partir du JSON
     if validateur is None:

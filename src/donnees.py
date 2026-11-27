@@ -23,8 +23,8 @@ def charger_donnees(nom_fichier: str) -> pd.DataFrame: #permet utilisation fonct
 
 
 
-#Empêche l'exécution du sample et nettoyage de données à moins que soit exécuté à partir du fichier donnees.py;
-#le sampling ne se refait pas à chaque run
+# Exécute l'échantillonnage et le nettoyage uniquement lorsque ce fichier
+# est lancé directement comme module, et non lorsqu'il est importé.
 if __name__ == "__main__": 
 
     # 1. Charger le dataset original
@@ -108,6 +108,19 @@ if __name__ == "__main__":
     # Supprimer la colonne d'index inutile
     df = df.drop(columns=["Unnamed: 0"])
 
+    # Vérifier combien de chansons dépassent 20 minutes avant le nettoyage
+    print(
+        "Chansons de plus de 20 minutes :",
+        (df["duration_ms"] > 20 * 60 * 1000).sum())
+
+    # Éliminer les chansons de plus de 20 minutes
+    df = df[df["duration_ms"] <= 20 * 60 * 1000]
+
+    # Vérifier qu'il ne reste aucune chanson de plus de 20 minutes
+    print(
+        "Chansons de plus de 20 minutes après le nettoyage :",
+        (df["duration_ms"] > 20 * 60 * 1000).sum())
+
     # Seulement garder les chansons ayant une durée ET un tempo strictement supérieurs à 0
     df = df[
         (df["duration_ms"] > 0) &
@@ -116,7 +129,7 @@ if __name__ == "__main__":
 
     # Vérifier que tout a bien été filtré
     print("\n--- Après le nettoyage ---")
-    print("Nombre de chansons restantes :", len(df)) #29948
+    print("Nombre de chansons restantes :", len(df)) #29921
 
     print("Durées égales à 0 :",
         (df["duration_ms"] == 0).sum())

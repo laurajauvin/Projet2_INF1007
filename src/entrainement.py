@@ -11,8 +11,10 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.ensemble import RandomForestRegressor
-from .donnees import charger_donnees
+from src.donnees import charger_donnees
 import time
+from collections.abc import Callable
+from typing import ParamSpec, TypeVar
 from functools import wraps 
 #wraps: aide le décorateur à conserver le nom et les infos de la fonction décorée
 
@@ -41,9 +43,13 @@ def calculer_reference(y_train : pd.Series,y_test : pd.Series) -> float:
 #Volet 2.5: Entraîner et évaluer
 def creer_modele() -> Pipeline: #chaîne d'étapes que scikitlearn applique dans le bon ordre
     #Relie les transformations et le modèle
-    """Construit le pipeline d'encodage de prédiction de la popularité.
-    Returns:
-    Pipeline: Pipeline contenant l'encodage du genre et la forêt aléatoire."""
+    
+    """Construit le pipeline utilisé pour prédire la popularité musicale.
+
+    Ne reçoit aucun argument.
+    Renvoie un Pipeline contenant l'encodage du genre musical
+    et le modèle de forêt aléatoire.
+    """
 
     #Encodage (transformation) de track_genre en valeurs numériques; garde les autres colonnes numériques (remainder = "passthrough")
     #handle_unknown = ignore -> permet au pipeline de ne pas planter s'il reçoit genre pas vu dans l'entrainement
@@ -54,15 +60,30 @@ def creer_modele() -> Pipeline: #chaîne d'étapes que scikitlearn applique dans
     return make_pipeline(transformation, RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1))
 
 #Chronométrage de l'entraînement
-def chronometrer(fonction):
-    """Mesure et affiche le temps d'exécution d'une fonction."""
+P = ParamSpec("P")
+R = TypeVar("R")
+
+# Chronométrage de l'entraînement
+def chronometrer(fonction: Callable[P, R]) -> Callable[P, R]:
+
+    """Mesure et affiche le temps d'exécution d'une fonction.
+
+    Reçoit une fonction à chronométrer.
+    Renvoie une fonction enveloppe qui conserve le même type de retour.
+    """
+
     @wraps(fonction)
-    #Wrapper:entoure une autre fonction pour faire quelque chose avant ou après son exécution
-    def wrapper(*args, **kwargs): #permet de recevoir argments sans les connaître à l'avance
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+
+        """Exécute la fonction et affiche sa durée d'exécution.
+
+        Reçoit les mêmes arguments que la fonction originale.
+        Renvoie le résultat de cette fonction.
+        """
         debut = time.perf_counter()
         resultat = fonction(*args, **kwargs)
         duree = time.perf_counter() - debut
-        #Afficher durée et renvoie résultat de la fonction originale
+
         print(f"Temps d'entraînement : {duree:.2f} secondes")
         return resultat
 
@@ -71,7 +92,15 @@ def chronometrer(fonction):
 #Affichag du temps d'entraînement quand entrainer_modele est exécuté
 @chronometrer
 def entrainer_modele(modele: Pipeline,x_train: pd.DataFrame,y_train: pd.Series) -> Pipeline:
-    """Entraîne le modèle sur les données d'entraînement et le renvoie."""
+
+    """Entraîne le modèle à partir des données d'entraînement.
+
+    Reçoit le pipeline à entraîner, les caractéristiques et les popularités
+    des chansons d'entraînement.
+    Renvoie le pipeline entraîné.
+    Peut lever ValueError si les données fournies ne sont pas valides.
+    """
+
     modele.fit(x_train, y_train)
     return modele
 
@@ -83,19 +112,35 @@ def predire(modele: Pipeline,x_test: pd.DataFrame) -> np.ndarray:
     return modele.predict(x_test)
 
 def calculer_mae(y_test: pd.Series,y_prediction: np.ndarray) -> float:
-    """Calcule et renvoie la MAE entre les valeurs réelles du test et les prédictions du modèle."""
+
+    """Calcule la MAE entre les popularités réelles et prédites.
+
+    Reçoit les popularités réelles et les prédictions du modèle.
+    Renvoie la moyenne des erreurs absolues sous forme de float.
+    Peut lever ValueError si les tableaux ne sont pas compatibles.
+    """
+
     #Plus MAE est basse, plus les prédictions sont proches des valeurs réelles, en moyenne
     return float(mean_absolute_error(y_test, y_prediction))
 
 def calculer_mae_numpy(y_test: pd.Series,y_prediction: np.ndarray) -> float:
-    """Calcule la MAE à l'aide des opérations vectorisées de NumPy.
-    Convertit les deus entrées en tableaux NumPy, calcule l'écart absolu pour chaque chanson, 
-    puis fait la moyenne de ces écarts"""
+    """Calcule la MAE avec les opérations vectorisées de NumPy.
+
+    Reçoit les popularités réelles et les prédictions du modèle.
+    Convertit les données en tableaux NumPy, calcule les écarts absolus,
+    puis leur moyenne.
+    Renvoie la MAE sous forme de float.
+    Peut lever ValueError si les tableaux ne sont pas compatibles.
+    """
     erreurs = np.abs(np.asarray(y_test) - np.asarray(y_prediction)) #on a testé dans fichier tests que fonctionne
     return float(np.mean(erreurs))
 
 def creer_graphique(y_test: pd.Series, y_prediction: np.ndarray,) -> Figure:
-    """Crée et renvoie le graphique de comparaison des popularités réelles et prédites."""
+    """Crée un graphique comparant les popularités réelles et prédites.
+
+    Reçoit les popularités réelles et les prédictions du modèle.
+    Renvoie un objet Figure contenant le graphique.
+    """
     figure = plt.figure(figsize=(7, 7))
 
     plt.scatter(y_test, y_prediction, alpha=0.3)
@@ -163,9 +208,15 @@ def creer_metadonnees(
     x_train: pd.DataFrame,
     mae_modele: float,
     mae_reference: float,
-    importances: dict[str, float]
-) -> dict[str, object]:
-    """Prépare les colonnes, intervalles et résultats à écrire dans le JSON."""
+    importances: dict[str, float]) -> dict[str, object]:
+    
+    """Prépare les informations à enregistrer dans le fichier JSON.
+
+    Reçoit les caractéristiques d'entraînement, les deux valeurs de MAE
+    et les importances des caractéristiques.
+    Renvoie un dictionnaire contenant les colonnes, les intervalles,
+    les métriques et les importances du modèle.
+    """
 
     #Récupère les colonnes numériques de x_train
     colonnes_numeriques = x_train.select_dtypes(include="number").columns
@@ -198,7 +249,15 @@ def creer_metadonnees(
 
 
 def sauvegarder_resultats(modele: Pipeline,metadonnees: dict[str, object],chemin_modele: str,chemin_json: str) -> None:
-    """Sauvegarde le modèle compressé et les métadonnées JSON."""
+    
+    """Enregistre le modèle entraîné et ses métadonnées.
+
+    Reçoit le modèle, le dictionnaire de métadonnées et les chemins
+    des fichiers de sauvegarde.
+    Ne renvoie aucune valeur.
+    Peut lever OSError si les fichiers ne peuvent pas être créés ou écrits.
+    """
+    
     os.makedirs(os.path.dirname(chemin_modele), exist_ok=True)
 
     #Ouvre le fichier en mode binaire et sauvegarde le pipeline entraîné avec une compression

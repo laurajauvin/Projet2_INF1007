@@ -8,9 +8,9 @@ import json
 import os
 import pickle
 import zlib
-from .entrainement import predire_popularite, calculer_importances
-from .exceptions import ErreurValidation
-from .validation import valider_entrees, creer_validateur
+from src.entrainement import predire_popularite, calculer_importances
+from src.exceptions import ErreurValidation
+from src.validation import valider_entrees, creer_validateur
 
 
 
