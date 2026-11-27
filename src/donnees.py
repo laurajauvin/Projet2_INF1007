@@ -108,6 +108,12 @@ if __name__ == "__main__":
     # Supprimer la colonne d'index inutile
     df = df.drop(columns=["Unnamed: 0"])
 
+    # Conserver uniquement les chansons dont la durée ne dépasse pas 20 minutes
+    df = df[df["duration_ms"] <= 20 * 60 * 1000]
+    print(
+    "Chansons de plus de 20 minutes :",
+    (df["duration_ms"] > 20 * 60 * 1000).sum())
+
     # Seulement garder les chansons ayant une durée ET un tempo strictement supérieurs à 0
     df = df[
         (df["duration_ms"] > 0) &
@@ -116,7 +122,7 @@ if __name__ == "__main__":
 
     # Vérifier que tout a bien été filtré
     print("\n--- Après le nettoyage ---")
-    print("Nombre de chansons restantes :", len(df)) #29948
+    print("Nombre de chansons restantes :", len(df)) #29921
 
     print("Durées égales à 0 :",
         (df["duration_ms"] == 0).sum())
