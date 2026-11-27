@@ -18,6 +18,7 @@ class Variable(ABC):
          """Valide une valeur; les classes enfants définissent les règles."""
          raise NotImplementedError #empêche de créer une classe qui ne redéfinit pas cette méthode
 
+    #permet de fournir le nom à une autre partie du programme qui l'appelle
     def __str__(self) -> str:
         """Renvoie le nom de la variable pour l'afficher sous forme de texte."""
         return self._nom
