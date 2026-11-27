@@ -6,6 +6,11 @@ Ce projet consiste à développer une application permettant de prédire la popu
 
 L'utilisateur peut entrer les caractéristiques d'une chanson dans une interface graphique développée avec Streamlit. L'application affiche ensuite une prédiction de popularité ainsi que des informations complémentaires sur le modèle.
 
+## Technologie utilisée : Streamlit
+
+L'interface graphique du projet a été développée avec Streamlit, une bibliothèque Python permettant de créer des applications Web interactives directement à partir de code Python. Cette technologie a été choisie puisqu'elle permet de concevoir rapidement une interface conviviale tout en restant dans l'environnement Python utilisé pour le développement du projet.
+
+L'application fonctionne localement sur l'ordinateur de l'utilisateur et est accessible dans un navigateur Web à l'aide d'une adresse locale.
 
 ## Installation et exécution
 
