@@ -11,7 +11,7 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.ensemble import RandomForestRegressor
-from .donnees import charger_donnees
+from src.donnees import charger_donnees
 import time
 from functools import wraps 
 #wraps: aide le décorateur à conserver le nom et les infos de la fonction décorée

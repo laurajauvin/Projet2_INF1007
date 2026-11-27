@@ -109,7 +109,7 @@ if __name__ == "__main__":
     df = df.drop(columns=["Unnamed: 0"])
 
     # Conserver uniquement les chansons dont la durée ne dépasse pas 20 minutes
-    df = df[df["duration_ms"] <= 20 * 60 * 1000]
+    df = df[df["duration_ms"] <0 * 60 * 1000]
     print(
     "Chansons de plus de 20 minutes :",
     (df["duration_ms"] > 20 * 60 * 1000).sum())

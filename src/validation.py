@@ -1,7 +1,7 @@
 import json
 import os
-from .exceptions import ErreurValidation
-from .variables import (
+from src.exceptions import ErreurValidation
+from src.variables import (
     VariableNumerique,
     VariableCategorielle,
     ValidateurVariables,
